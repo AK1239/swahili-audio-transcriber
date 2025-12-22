@@ -1,29 +1,33 @@
 """Get summary endpoint"""
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.application.use_cases.get_summary import GetSummaryUseCase
-from app.container import ApplicationContainer
 from app.presentation.schemas.response_schemas import SummaryResponse
 
+if TYPE_CHECKING:
+    from app.container import ApplicationContainer
+
 router = APIRouter()
+
+
+def get_container(request: Request) -> "ApplicationContainer":
+    """Get application container from request state"""
+    return request.app.state.container
 
 
 @router.get(
     "/summary/{transcription_id}",
     response_model=SummaryResponse,
 )
-@inject
 async def get_summary(
     transcription_id: UUID,
-    use_case: GetSummaryUseCase = Depends(
-        Provide[ApplicationContainer.get_summary_use_case]
-    ),
+    container: "ApplicationContainer" = Depends(get_container),
 ) -> SummaryResponse:
     """Get summary by transcription ID"""
     try:
+        use_case = container.get_summary_use_case
         result = await use_case.execute(transcription_id)
         return SummaryResponse.from_dto(result)
     except ValueError as e:

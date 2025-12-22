@@ -1,7 +1,4 @@
-"""Dependency injection container"""
-from dependency_injector import containers, providers
 from openai import AsyncOpenAI
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.services.transcription_orchestrator import TranscriptionOrchestrator
 from app.application.use_cases.get_summary import GetSummaryUseCase
@@ -20,84 +17,100 @@ from app.infrastructure.storage.local_file_storage import LocalFileStorage
 from app.shared.logging import get_logger
 
 
-class ApplicationContainer(containers.DeclarativeContainer):
-    """Dependency injection container"""
+class ApplicationContainer:
+    """Manual dependency injection container"""
     
-    # Configuration
-    config = providers.Configuration()
-    config.from_dict({
-        "database": {"url": settings.database_url},
-        "openai": {"api_key": settings.openai_api_key},
-        "storage": {"upload_dir": settings.upload_dir},
-    })
+    def __init__(self):
+        """Initialize all dependencies"""
+        # Logger
+        self._logger = get_logger()
+        
+        # OpenAI client
+        self._openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
+        
+        # Database session factory
+        self._db_session_factory = AsyncSessionLocal
+        
+        # Repositories
+        self._transcription_repository = None  # Lazy initialization
+        
+        # Providers
+        self._transcription_provider = OpenAIWhisperProvider(
+            client=self._openai_client
+        )
+        
+        self._summarization_provider = OpenAISummarizationProvider(
+            client=self._openai_client,
+            model="gpt-3.5-turbo"
+        )
+        
+        # Storage
+        self._file_storage = LocalFileStorage(upload_dir=settings.upload_dir)
+        
+        # Initialize use cases after repository is available (lazy initialization)
+        self._upload_audio_use_case = None
+        self._get_transcript_use_case = None
+        self._get_summary_use_case = None
+        self._transcription_orchestrator = None
     
-    # Logging
-    logger = providers.Singleton(get_logger)
+    @property
+    def transcription_repository(self):
+        """Get transcription repository (lazy initialization)"""
+        if self._transcription_repository is None:
+            session = self._db_session_factory()
+            self._transcription_repository = TranscriptionRepositoryImpl(session)
+            
+            # Initialize orchestrator and use cases after repository is ready
+            if self._transcription_orchestrator is None:
+                self._transcription_orchestrator = TranscriptionOrchestrator(
+                    transcription_repo=self._transcription_repository,
+                    transcription_provider=self._transcription_provider,
+                    summarization_provider=self._summarization_provider,
+                    file_storage=self._file_storage,
+                    logger=self._logger,
+                )
+                
+                self._upload_audio_use_case = UploadAudioUseCase(
+                    transcription_repo=self._transcription_repository,
+                    file_storage=self._file_storage,
+                    transcription_orchestrator=self._transcription_orchestrator,
+                    logger=self._logger,
+                )
+                
+                self._get_transcript_use_case = GetTranscriptUseCase(
+                    transcription_repo=self._transcription_repository,
+                    logger=self._logger,
+                )
+                
+                self._get_summary_use_case = GetSummaryUseCase(
+                    transcription_repo=self._transcription_repository,
+                    logger=self._logger,
+                )
+        
+        return self._transcription_repository
     
-    # Database session factory
-    db_session = providers.Factory(
-        lambda: AsyncSessionLocal(),
-    )
+    @property
+    def upload_audio_use_case(self) -> UploadAudioUseCase:
+        """Get upload audio use case"""
+        _ = self.transcription_repository  # Ensure initialization
+        return self._upload_audio_use_case
     
-    # Repositories
-    transcription_repository = providers.Factory(
-        TranscriptionRepositoryImpl,
-        session=providers.Singleton(
-            lambda: AsyncSessionLocal(),
-        ),
-    )
+    @property
+    def get_transcript_use_case(self) -> GetTranscriptUseCase:
+        """Get transcript use case"""
+        _ = self.transcription_repository  # Ensure initialization
+        return self._get_transcript_use_case
     
-    # OpenAI client
-    openai_client = providers.Singleton(
-        AsyncOpenAI,
-        api_key=config.openai.api_key,
-    )
+    @property
+    def get_summary_use_case(self) -> GetSummaryUseCase:
+        """Get summary use case"""
+        _ = self.transcription_repository  # Ensure initialization
+        return self._get_summary_use_case
     
-    # Providers
-    transcription_provider = providers.Factory(
-        OpenAIWhisperProvider,
-        client=openai_client,
-    )
+    def wire(self, modules=None):
+        """Wire dependencies (compatibility method - no-op for manual DI)"""
+        pass
     
-    summarization_provider = providers.Factory(
-        OpenAISummarizationProvider,
-        client=openai_client,
-        model=providers.Object("gpt-3.5-turbo"),
-    )
-    
-    # Storage
-    file_storage = providers.Factory(
-        LocalFileStorage,
-        upload_dir=config.storage.upload_dir,
-    )
-    
-    # Services
-    transcription_orchestrator = providers.Factory(
-        TranscriptionOrchestrator,
-        transcription_repo=transcription_repository,
-        transcription_provider=transcription_provider,
-        summarization_provider=summarization_provider,
-        file_storage=file_storage,
-        logger=logger,
-    )
-    
-    # Use Cases
-    upload_audio_use_case = providers.Factory(
-        UploadAudioUseCase,
-        transcription_repo=transcription_repository,
-        file_storage=file_storage,
-        transcription_orchestrator=transcription_orchestrator,
-        logger=logger,
-    )
-    
-    get_transcript_use_case = providers.Factory(
-        GetTranscriptUseCase,
-        transcription_repo=transcription_repository,
-        logger=logger,
-    )
-    
-    get_summary_use_case = providers.Factory(
-        GetSummaryUseCase,
-        transcription_repo=transcription_repository,
-        logger=logger,
-    )
+    def unwire(self):
+        """Unwire dependencies (compatibility method - no-op for manual DI)"""
+        pass

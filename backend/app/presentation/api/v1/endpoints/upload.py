@@ -1,12 +1,19 @@
 """Upload audio endpoint"""
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from dependency_injector.wiring import Provide, inject
+from typing import TYPE_CHECKING
 
-from app.application.use_cases.upload_audio import UploadAudioUseCase
-from app.container import ApplicationContainer
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+
 from app.presentation.schemas.response_schemas import TranscriptionResponse
 
+if TYPE_CHECKING:
+    from app.container import ApplicationContainer
+
 router = APIRouter()
+
+
+def get_container(request: Request) -> "ApplicationContainer":
+    """Get application container from request state"""
+    return request.app.state.container
 
 
 @router.post(
@@ -14,12 +21,9 @@ router = APIRouter()
     response_model=TranscriptionResponse,
     status_code=status.HTTP_201_CREATED,
 )
-@inject
 async def upload_audio(
     file: UploadFile = File(...),
-    use_case: UploadAudioUseCase = Depends(
-        Provide[ApplicationContainer.upload_audio_use_case]
-    ),
+    container: "ApplicationContainer" = Depends(get_container),
 ) -> TranscriptionResponse:
     """
     Upload audio file for transcription
@@ -27,6 +31,7 @@ async def upload_audio(
     Accepts: .mp3, .wav, .mp4 files up to 25MB
     """
     try:
+        use_case = container.upload_audio_use_case
         result = await use_case.execute(file)
         return TranscriptionResponse.from_dto(result)
     except Exception as e:

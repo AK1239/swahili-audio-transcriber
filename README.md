@@ -28,6 +28,7 @@ The application follows Clean Architecture principles:
 ## Tech Stack
 
 ### Backend
+
 - Python 3.11+
 - FastAPI
 - SQLAlchemy 2.0 (async)
@@ -37,6 +38,7 @@ The application follows Clean Architecture principles:
 - Alembic (migrations)
 
 ### Frontend
+
 - React 18+ with TypeScript
 - Vite
 - React Query
@@ -46,6 +48,7 @@ The application follows Clean Architecture principles:
 ## Quick Start
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 18+
 - OpenAI API key
@@ -57,9 +60,15 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Copy environment file and configure
 cp .env.example .env
-# Edit .env with your OpenAI API key
+# Edit .env with your OpenAI API key and other settings
+
+# Initialize database
 alembic upgrade head
+
+# Run development server
 uvicorn app.main:app --reload
 ```
 
@@ -68,8 +77,12 @@ uvicorn app.main:app --reload
 ```bash
 cd frontend
 npm install
+
+# Copy environment file and configure
 cp .env.example .env
 # Edit .env with API URL (default: http://localhost:8000/api/v1)
+
+# Run development server
 npm run dev
 ```
 
@@ -116,6 +129,7 @@ pytest --cov=app
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 
 Free tier options:
+
 - Railway (backend) + Vercel (frontend)
 - Render (backend) + Netlify (frontend)
 - Fly.io (full stack)
@@ -132,4 +146,3 @@ MIT
 ## Contributing
 
 Contributions welcome! Please follow clean architecture principles and maintain test coverage.
-

@@ -25,19 +25,10 @@ async def lifespan(app: FastAPI):
     configure_logging(settings.log_level)
     await create_tables()
     
-    # Wire dependency injection
+    # Initialize dependency injection container
     from app.container import ApplicationContainer
-    from app.presentation.api.v1.endpoints import summary, transcript, upload
     
     container = ApplicationContainer()
-    container.wire(
-        modules=[
-            __name__,
-            upload,
-            transcript,
-            summary,
-        ]
-    )
     app.state.container = container
     
     yield

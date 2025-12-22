@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     
     # OpenAI
     openai_api_key: str
+    openai_model: str = "gpt-3.5-turbo"  # Default model for summarization, can be overridden via env
+    openai_whisper_model: str = "whisper-1"  # Whisper model for transcription, can be overridden via env
     
     # File Storage
     upload_dir: str = "./uploads"

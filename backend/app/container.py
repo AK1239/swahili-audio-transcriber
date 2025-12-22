@@ -36,12 +36,13 @@ class ApplicationContainer:
         
         # Providers
         self._transcription_provider = OpenAIWhisperProvider(
-            client=self._openai_client
+            client=self._openai_client,
+            model=settings.openai_whisper_model
         )
         
         self._summarization_provider = OpenAISummarizationProvider(
             client=self._openai_client,
-            model="gpt-3.5-turbo"
+            model=settings.openai_model
         )
         
         # Storage

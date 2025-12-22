@@ -14,8 +14,9 @@ logger = get_logger(__name__)
 class OpenAIWhisperProvider(TranscriptionProvider):
     """OpenAI Whisper API implementation"""
     
-    def __init__(self, client: AsyncOpenAI):
+    def __init__(self, client: AsyncOpenAI, model: str = "whisper-1"):
         self._client = client
+        self._model = model
     
     async def transcribe(
         self,
@@ -48,7 +49,7 @@ class OpenAIWhisperProvider(TranscriptionProvider):
             
             # Call OpenAI Whisper API
             response = await self._client.audio.transcriptions.create(
-                model="whisper-1",
+                model=self._model,
                 file=audio_file_obj,
                 language=language_hint,
                 response_format="text",

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.application.dto.summary_dto import ActionItemDTO, SummaryDTO
 from app.application.dto.transcription_dto import TranscriptionDTO
@@ -14,9 +14,9 @@ class TranscriptionResponse(BaseModel):
     id: UUID
     filename: str
     status: str
-    transcript_text: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
+    transcriptText: Optional[str] = Field(None, alias="transcript_text")
+    createdAt: datetime = Field(alias="created_at")
+    updatedAt: datetime = Field(alias="updated_at")
     
     @classmethod
     def from_dto(cls, dto: TranscriptionDTO) -> "TranscriptionResponse":
@@ -30,15 +30,19 @@ class TranscriptionResponse(BaseModel):
             updated_at=dto.updated_at,
         )
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        # Use alias for serialization (camelCase in JSON)
+        json_encoders={},
+    )
 
 
 class ActionItemResponse(BaseModel):
     """Response schema for action item"""
     person: str
     task: str
-    due_date: Optional[str] = None
+    dueDate: Optional[str] = Field(None, alias="due_date")
     
     @classmethod
     def from_dto(cls, dto: ActionItemDTO) -> "ActionItemResponse":
@@ -49,18 +53,20 @@ class ActionItemResponse(BaseModel):
             due_date=dto.due_date,
         )
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+    )
 
 
 class SummaryResponse(BaseModel):
     """Response schema for summary"""
     id: UUID
-    transcription_id: UUID
+    transcriptionId: UUID = Field(alias="transcription_id")
     muhtasari: str
     maamuzi: List[str]
     kazi: List[ActionItemResponse]
-    masuala_yaliyoahirishwa: List[str]
+    masualaYaliyoahirishwa: List[str] = Field(alias="masuala_yaliyoahirishwa")
     
     @classmethod
     def from_dto(cls, dto: SummaryDTO) -> "SummaryResponse":
@@ -74,8 +80,10 @@ class SummaryResponse(BaseModel):
             masuala_yaliyoahirishwa=dto.masuala_yaliyoahirishwa,
         )
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+    )
 
 
 class ErrorResponse(BaseModel):

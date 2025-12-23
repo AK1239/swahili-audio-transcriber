@@ -7,9 +7,10 @@ export const transcriptionService = {
   /**
    * Upload audio file for transcription
    */
-  async uploadFile(file: File): Promise<Transcription> {
+  async uploadFile(file: File, origin: string = 'file-upload'): Promise<Transcription> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('origin', origin);
     
     const response = await client.post<Transcription>(
       endpoints.upload,

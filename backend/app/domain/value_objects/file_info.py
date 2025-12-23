@@ -17,10 +17,12 @@ class FileInfo:
     size_bytes: int
     content_type: str
     extension: str
+    origin: str | None = None
     
     # Constants
     MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25MB
-    ALLOWED_EXTENSIONS = {".mp3", ".wav", ".mp4"}
+    # Extended to support browser recordings (e.g. MediaRecorder -> .webm)
+    ALLOWED_EXTENSIONS = {".mp3", ".wav", ".mp4", ".webm", ".m4a", ".ogg"}
     
     @classmethod
     def from_upload_file(
@@ -28,6 +30,7 @@ class FileInfo:
         filename: str,
         size_bytes: int,
         content_type: Optional[str] = None,
+        origin: Optional[str] = None,
     ) -> "FileInfo":
         """Create FileInfo from upload file metadata"""
         extension = Path(filename).suffix.lower()
@@ -38,6 +41,9 @@ class FileInfo:
                 ".mp3": "audio/mpeg",
                 ".wav": "audio/wav",
                 ".mp4": "video/mp4",
+                ".webm": "audio/webm",
+                ".m4a": "audio/mp4",
+                ".ogg": "audio/ogg",
             }
             content_type = content_type_map.get(extension, "application/octet-stream")
         
@@ -46,6 +52,7 @@ class FileInfo:
             size_bytes=size_bytes,
             content_type=content_type,
             extension=extension,
+            origin=origin,
         )
     
     def validate(self) -> None:

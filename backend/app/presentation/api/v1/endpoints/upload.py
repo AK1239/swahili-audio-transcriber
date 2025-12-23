@@ -1,7 +1,7 @@
 """Upload audio endpoint"""
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 
 from app.presentation.schemas.response_schemas import TranscriptionResponse
 from app.shared.logging import get_logger
@@ -26,12 +26,15 @@ def get_container(request: Request) -> "ApplicationContainer":
 async def upload_audio(
     request: Request,
     file: UploadFile = File(...),
+    origin: str | None = Form(None),
     container: "ApplicationContainer" = Depends(get_container),
 ) -> TranscriptionResponse:
     """
     Upload audio file for transcription
     
-    Accepts: .mp3, .wav, .mp4 files up to 25MB
+    Accepts: .mp3, .wav, .mp4, .webm files up to 25MB.
+    Optional form field `origin` can be used to indicate the source
+    (e.g. "file-upload", "browser-recording", "meet-extension").
     """
     # Get request_id if available (set by RequestIDMiddleware)
     request_id = getattr(request.state, "request_id", None)
@@ -39,7 +42,7 @@ async def upload_audio(
     
     try:
         use_case = container.upload_audio_use_case
-        result = await use_case.execute(file)
+        result = await use_case.execute(file, origin=origin)
         response = TranscriptionResponse.from_dto(result)
         
         # Log response

@@ -7,6 +7,7 @@ import { useTranscriptionUpload } from '../../hooks/useTranscriptionUpload';
 import { DragDropZone } from '../features/upload/DragDropZone';
 import { FileList } from '../features/upload/FileList';
 import { SettingsPanel } from '../features/upload/SettingsPanel';
+import { RecordPanel } from '../features/upload/RecordPanel';
 import { Toast } from '../ui/Toast';
 
 export function UploadPage() {
@@ -24,7 +25,7 @@ export function UploadPage() {
   // Drag and drop
   const handleFileSelect = useCallback(
     (file: File) => {
-      addFile(file);
+      addFile(file, 'file-upload');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     },
@@ -64,8 +65,16 @@ export function UploadPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-        {/* Left Column: Upload Area */}
+        {/* Left Column: Upload & Record Area */}
         <div className="lg:col-span-2 flex flex-col gap-6">
+          <RecordPanel
+            onRecordingReady={(file) => {
+              addFile(file, 'browser-recording');
+              setShowToast(true);
+              setTimeout(() => setShowToast(false), 3000);
+            }}
+          />
+
           <DragDropZone
             dragActive={dragAndDrop.dragActive}
             onDragOver={dragAndDrop.handleDragOver}

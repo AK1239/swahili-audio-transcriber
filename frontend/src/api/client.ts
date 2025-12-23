@@ -5,7 +5,7 @@ import { config } from '../config/env';
 
 const client: AxiosInstance = axios.create({
   baseURL: config.apiUrl,
-  timeout: 30000,
+  timeout: 90000, // 90 seconds for long-running transcription/summarization requests
   headers: {
     'Content-Type': 'application/json',
   },

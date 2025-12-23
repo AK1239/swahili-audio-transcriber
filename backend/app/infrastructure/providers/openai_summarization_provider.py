@@ -91,14 +91,6 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 )
                 raise SummarizationProviderError("Empty response from OpenAI")
             
-            # Log raw response (truncated for debugging)
-            logger.debug(
-                "summarization.raw_response",
-                transcription_id=str(transcription_id),
-                response_preview=content[:500],  # First 500 chars
-                response_length=len(content),
-            )
-            
             # Parse JSON response
             try:
                 summary_data = json.loads(content)
@@ -134,7 +126,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 ),
             }
             
-            # Log what OpenAI returned (before creating entity)
+            # Log what OpenAI returns
             logger.info(
                 "summarization.openai_response",
                 transcription_id=str(transcription_id),
@@ -177,7 +169,6 @@ class OpenAISummarizationProvider(SummarizationProvider):
         except SummarizationProviderError:
             raise
         except Exception as e:
-            # Don't log here - let the application layer handle error logging
             raise SummarizationProviderError(
                 f"Failed to summarize transcript: {str(e)}"
             ) from e

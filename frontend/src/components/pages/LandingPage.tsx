@@ -23,7 +23,7 @@ export function LandingPage() {
                   For Teams
                 </a>
               </nav>
-              <Button className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-blue-700 transition-all transform hover:scale-105">
+              <Button variant="default" className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:scale-105">
                 <span>Anza Bure</span>
               </Button>
             </div>
@@ -35,7 +35,7 @@ export function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col items-center w-full">
+      <main className="grow flex flex-col items-center w-full">
         {/* Hero Section with Upload */}
         <section className="relative w-full flex justify-center py-12 md:py-20 lg:py-24 bg-hero-pattern">
           {/* Abstract Background Blobs */}
@@ -51,7 +51,7 @@ export function LandingPage() {
               </div>
               <h1 className="text-[#0d101b] text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-[-0.02em]">
                 Badili sauti kuwa <br className="hidden lg:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">
+                <span className="text-primary">
                   maandishi
                 </span>{" "}
                 na muhtasari wa akili
@@ -62,22 +62,22 @@ export function LandingPage() {
               </p>
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-[#4b5563]">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                  <span className="material-symbols-outlined text-[20px] bg-green-500 text-white rounded-full">check_circle</span>
                   <span>98% Accuracy</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-medium text-[#4b5563]">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                  <span className="material-symbols-outlined text-[20px] bg-green-500 text-white rounded-full">check_circle</span>
                   <span>Swahili & English</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-medium text-[#4b5563]">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                  <span className="material-symbols-outlined text-[20px] bg-green-500 text-white rounded-full">check_circle</span>
                   <span>Fast Export</span>
                 </div>
               </div>
             </div>
 
             {/* Interactive Upload Card */}
-            <div className="w-full max-w-[500px] flex-shrink-0">
+            <div className="w-full max-w-[500px] shrink-0">
               <div className="bg-white rounded-2xl shadow-xl shadow-blue-900/5 border border-[#e7e9f3] overflow-hidden p-6 md:p-8 relative group">
                 {/* Drag overlay effect */}
                 <div className="absolute inset-0 bg-primary/5 border-2 border-primary border-dashed rounded-2xl m-2 hidden group-hover:block pointer-events-none transition-all"></div>
@@ -92,7 +92,7 @@ export function LandingPage() {
                       Drag & drop MP3, WAV, or M4A files here to transcribe immediately.
                     </p>
                   </div>
-                  <Button className="flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-md w-full sm:w-auto min-w-[160px]">
+                  <Button variant="default" className="flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-md w-full sm:w-auto min-w-[160px]">
                     Browse Files
                   </Button>
                   <p className="text-xs text-[#9ca3af] mt-2">Max file size: 500MB</p>
@@ -188,7 +188,7 @@ export function LandingPage() {
         {/* Visual Showcase Section */}
         <section className="w-full py-16 md:py-24 bg-background-light">
           <div className="w-full max-w-[1280px] px-4 md:px-10 mx-auto">
-            <div className="bg-gradient-to-br from-[#1235e2] to-[#101322] rounded-3xl p-8 md:p-12 lg:p-16 text-white relative overflow-hidden">
+            <div className="bg-linear-to-br from-[#1235e2] to-[#101322] rounded-3xl p-8 md:p-12 lg:p-16 text-white relative overflow-hidden">
               {/* Background decoration */}
               <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://placeholder.pics/svg/1000')] bg-cover mix-blend-overlay"></div>
               <div className="absolute right-0 bottom-0 opacity-20 transform translate-x-1/4 translate-y-1/4">
@@ -208,7 +208,7 @@ export function LandingPage() {
                     workflow.
                   </p>
                   <div className="flex gap-4 pt-4">
-                    <Button className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors">
+                    <Button variant="default" className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors">
                       Get Started
                     </Button>
                     <Button
@@ -233,14 +233,14 @@ export function LandingPage() {
                     </div>
                     <div className="space-y-4">
                       <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500/50 flex-shrink-0"></div>
+                        <div className="w-8 h-8 rounded-full bg-indigo-500/50 shrink-0"></div>
                         <div className="space-y-2 w-full">
                           <div className="h-3 w-3/4 bg-white/20 rounded"></div>
                           <div className="h-3 w-1/2 bg-white/10 rounded"></div>
                         </div>
                       </div>
                       <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-purple-500/50 flex-shrink-0"></div>
+                        <div className="w-8 h-8 rounded-full bg-purple-500/50 shrink-0"></div>
                         <div className="space-y-2 w-full">
                           <div className="h-3 w-5/6 bg-white/20 rounded"></div>
                           <div className="h-3 w-2/3 bg-white/10 rounded"></div>
@@ -248,7 +248,7 @@ export function LandingPage() {
                         </div>
                       </div>
                       <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500/50 flex-shrink-0"></div>
+                        <div className="w-8 h-8 rounded-full bg-indigo-500/50 shrink-0"></div>
                         <div className="space-y-2 w-full">
                           <div className="h-3 w-4/5 bg-white/20 rounded"></div>
                         </div>

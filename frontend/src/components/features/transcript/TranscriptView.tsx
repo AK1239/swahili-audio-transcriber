@@ -15,7 +15,7 @@ import { ProgressBar } from '../../ui/ProgressBar';
 export const TranscriptView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: transcript, isLoading, error } = useTranscript(id || null);
-  const { data: summary, isLoading: summaryLoading } = useSummary(id || null);
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useSummary(id || null);
   const [showTranscript, setShowTranscript] = useState(false);
   const formatDate = (dateString: string) => {
     try {
@@ -177,7 +177,22 @@ export const TranscriptView: React.FC = () => {
       )}
 
       {/* Main Content Grid */}
-      {summary ? (
+      {summaryLoading ? (
+        <div className="p-4">
+          <ProgressBar progress={50} label="Loading summary..." />
+          <p className="text-[#4c599a] mt-2">Fetching summary data...</p>
+        </div>
+      ) : summaryError ? (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            {summaryError instanceof Error 
+              ? summaryError.message.includes('404') || summaryError.message.includes('no summary')
+                ? 'Summary is still being generated. Please wait a moment and refresh.'
+                : `Error loading summary: ${summaryError.message}`
+              : 'Error loading summary. Please try refreshing the page.'}
+          </p>
+        </div>
+      ) : summary ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 p-4">
           {/* Brief Summary */}
           <div className="lg:col-span-8">
@@ -241,8 +256,10 @@ export const TranscriptView: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="p-4">
-          <p className="text-[#4c599a]">Summary is being generated...</p>
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            Summary is still being generated. This may take a few moments. Please refresh the page in a moment.
+          </p>
         </div>
       )}
 

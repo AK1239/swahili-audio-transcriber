@@ -15,6 +15,20 @@ Maelezo:
 - Ikiwa kuna mchanganyiko wa Kiswahili na Kiingereza, weka hivyo hivyo
 - Jibu kwa JSON format tu, bila maandishi yoyote ya ziada
 
+MUHIMU: Tumia muundo huu wa JSON hasa (bila kubadilisha majina ya uwanja):
+{{
+  "muhtasari": "muhtasari mfupi wa 2-3 sentensi hapa",
+  "maamuzi": ["maamuzi 1", "maamuzi 2"],
+  "kazi": [
+    {{
+      "nani": "jina la mtu",
+      "kazi": "kazi ya kufanya",
+      "tarehe": "tarehe ikiwa imetajwa au null"
+    }}
+  ],
+  "masuala_yaliyoahirishwa": ["masuala 1", "masuala 2"]
+}}
+
 {transcript}
 
 Jibu:"""

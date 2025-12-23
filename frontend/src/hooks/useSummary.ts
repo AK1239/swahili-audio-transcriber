@@ -6,10 +6,16 @@ import { Summary } from '../types/summary';
 export function useSummary(id: string | null) {
   return useQuery<Summary>(
     ['summary', id],
-    () => summaryService.getSummary(id!),
+    async () => {
+      const data = await summaryService.getSummary(id!);
+      return data;
+    },
     {
       enabled: !!id,
       retry: 2,
+      onError: (error) => {
+        console.error('Error fetching summary:', error);
+      },
     },
   );
 }

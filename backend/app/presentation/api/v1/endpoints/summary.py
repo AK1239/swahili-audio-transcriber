@@ -22,6 +22,7 @@ def get_container(request: Request) -> "ApplicationContainer":
 @router.get(
     "/summary/{transcription_id}",
     response_model=SummaryResponse,
+    response_model_by_alias=True,  # Ensure camelCase aliases are used
 )
 async def get_summary(
     transcription_id: UUID,
@@ -35,14 +36,15 @@ async def get_summary(
     try:
         use_case = container.get_summary_use_case
         result = await use_case.execute(transcription_id)
+        logger.info(f"Result: {result}")
         response = SummaryResponse.from_dto(result)
         
-        # Log response
         bound_logger.info(
             "summary.response",
             transcription_id=str(transcription_id),
             summary_id=str(response.id),
             has_muhtasari=bool(response.muhtasari),
+            muhtasari_length=len(response.muhtasari) if response.muhtasari else 0,
             maamuzi_count=len(response.maamuzi),
             kazi_count=len(response.kazi),
             masuala_count=len(response.masuala_yaliyoahirishwa),

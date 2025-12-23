@@ -72,6 +72,17 @@ class TranscriptionOrchestrator:
                 language="sw",
             )
             
+            # Log generated summary details before saving
+            self._logger.info(
+                "summarization.generated",
+                transcription_id=str(transcription_id),
+                summary_id=str(summary.id),
+                muhtasari_length=len(summary.muhtasari or ""),
+                maamuzi_count=len(summary.maamuzi or []),
+                kazi_count=len(summary.kazi or []),
+                masuala_count=len(summary.masuala_yaliyoahirishwa or []),
+            )
+            
             # Add summary
             transcription.add_summary(summary)
             await self._repo.update(transcription)

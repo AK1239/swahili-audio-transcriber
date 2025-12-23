@@ -15,6 +15,10 @@ def configure_logging(log_level: str = "INFO") -> None:
         level=getattr(logging, log_level.upper()),
     )
     
+    # Disable SQLAlchemy engine query logging
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
+    
     # Configure structlog
     structlog.configure(
         processors=[

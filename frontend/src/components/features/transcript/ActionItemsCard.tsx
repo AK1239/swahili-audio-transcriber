@@ -19,6 +19,25 @@ export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, o
     }
   };
 
+  const safeActionItems = actionItems || [];
+
+  if (safeActionItems.length === 0) {
+    return (
+      <SummaryCard
+        title="Kazi za Kufuatilia"
+        icon="check_circle"
+        iconBg="bg-purple-50"
+        iconColor="text-purple-600"
+        onCopy={onCopy}
+        content={
+          <div className="text-center py-8 text-[#4c599a]">
+            <p className="text-sm">Hakuna kazi za kufuatilia</p>
+          </div>
+        }
+      />
+    );
+  }
+
   return (
     <SummaryCard
       title="Kazi za Kufuatilia"
@@ -28,7 +47,7 @@ export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, o
       onCopy={onCopy}
       content={
         <div className="flex flex-col gap-4">
-          {actionItems.map((item, index) => (
+          {safeActionItems.map((item, index) => (
             <div
               key={index}
               className="flex items-start gap-3 p-3 rounded-xl bg-background-light hover:bg-gray-100 transition cursor-pointer group"

@@ -160,24 +160,39 @@ export const TranscriptView: React.FC = () => {
           {/* Action Items */}
           <div className="lg:col-span-4">
             <ActionItemsCard
-              actionItems={summary.kazi}
-              onCopy={() => navigator.clipboard.writeText(JSON.stringify(summary.kazi, null, 2))}
+              actionItems={summary.kazi || []}
+              onCopy={() => {
+                const kazi = summary.kazi || [];
+                if (kazi.length > 0) {
+                  navigator.clipboard.writeText(JSON.stringify(kazi, null, 2));
+                }
+              }}
             />
           </div>
 
           {/* Key Decisions */}
           <div className="lg:col-span-6">
             <KeyDecisionsCard
-              decisions={summary.maamuzi}
-              onCopy={() => navigator.clipboard.writeText(summary.maamuzi.join('\n'))}
+              decisions={summary.maamuzi || []}
+              onCopy={() => {
+                const maamuzi = summary.maamuzi || [];
+                if (maamuzi.length > 0) {
+                  navigator.clipboard.writeText(maamuzi.join('\n'));
+                }
+              }}
             />
           </div>
 
           {/* Deferred Topics */}
           <div className="lg:col-span-6">
             <DeferredTopicsCard
-              topics={summary.masualaYaliyoahirishwa}
-              onCopy={() => navigator.clipboard.writeText(summary.masualaYaliyoahirishwa.join('\n'))}
+              topics={summary.masualaYaliyoahirishwa || []}
+              onCopy={() => {
+                const topics = summary.masualaYaliyoahirishwa || [];
+                if (topics.length > 0) {
+                  navigator.clipboard.writeText(topics.join('\n'));
+                }
+              }}
             />
           </div>
         </div>

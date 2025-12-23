@@ -4,9 +4,10 @@ import React from 'react';
 interface DeferredTopicsCardProps {
   topics: string[];
   onCopy?: () => void;
+  copied?: boolean;
 }
 
-export const DeferredTopicsCard: React.FC<DeferredTopicsCardProps> = ({ topics, onCopy }) => {
+export const DeferredTopicsCard: React.FC<DeferredTopicsCardProps> = ({ topics, onCopy, copied = false }) => {
   const safeTopics = topics || [];
   
   if (safeTopics.length === 0) {
@@ -43,10 +44,16 @@ export const DeferredTopicsCard: React.FC<DeferredTopicsCardProps> = ({ topics, 
         {onCopy && (
           <button
             onClick={onCopy}
-            className="text-[#4c599a] hover:text-primary p-2 rounded-lg hover:bg-gray-50 transition"
-            title="Nakili"
+            className={`p-2 rounded-lg transition ${
+              copied
+                ? 'text-green-600 bg-green-50'
+                : 'text-[#4c599a] hover:text-primary hover:bg-gray-50'
+            }`}
+            title={copied ? 'Imenakiliwa' : 'Nakili'}
           >
-            <span className="material-symbols-outlined">content_copy</span>
+            <span className="material-symbols-outlined">
+              {copied ? 'check_circle' : 'content_copy'}
+            </span>
           </button>
         )}
       </div>

@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranscript } from '../../../hooks/useTranscript';
 import { useSummary } from '../../../hooks/useSummary';
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 import { formatDateSwahili } from '../../../utils/formatters';
 import { formatTranscriptText } from '../../../utils/transcriptFormatter';
 import { getDisplayName } from '../../../utils/filename';
@@ -14,12 +15,20 @@ import { ActionItemsCard } from './ActionItemsCard';
 import { KeyDecisionsCard } from './KeyDecisionsCard';
 import { DeferredTopicsCard } from './DeferredTopicsCard';
 import { ProgressBar } from '../../ui/ProgressBar';
+import { Toast } from '../../ui/Toast';
 
 export const TranscriptView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: transcript, isLoading, error } = useTranscript(id || null);
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useSummary(id || null);
   const [showTranscript, setShowTranscript] = useState(false);
+  
+  // Copy hooks for each section
+  const transcriptCopy = useCopyToClipboard();
+  const summaryCopy = useCopyToClipboard();
+  const kaziCopy = useCopyToClipboard();
+  const maamuziCopy = useCopyToClipboard();
+  const masualaCopy = useCopyToClipboard();
 
 
   if (!id) {
@@ -136,7 +145,8 @@ export const TranscriptView: React.FC = () => {
             icon="description"
             iconBg="bg-green-50"
             iconColor="text-green-600"
-            onCopy={() => navigator.clipboard.writeText(transcript.transcriptText || '')}
+            onCopy={() => transcriptCopy.copy(transcript.transcriptText || '')}
+            copied={transcriptCopy.copied}
             content={
               <div className="prose prose-lg max-w-none text-[#0d101b] leading-relaxed">
                 <ReactMarkdown
@@ -181,7 +191,8 @@ export const TranscriptView: React.FC = () => {
               icon="summarize"
               iconBg="bg-blue-50"
               iconColor="text-primary"
-              onCopy={() => navigator.clipboard.writeText(summary.muhtasari || '')}
+              onCopy={() => summaryCopy.copy(summary.muhtasari || '')}
+              copied={summaryCopy.copied}
               content={
                 summary.muhtasari && summary.muhtasari.trim() ? (
                   <div className="prose prose-blue max-w-none text-[#0d101b] leading-relaxed text-base md:text-lg">
@@ -203,9 +214,10 @@ export const TranscriptView: React.FC = () => {
               onCopy={() => {
                 const kazi = summary.kazi || [];
                 if (kazi.length > 0) {
-                  navigator.clipboard.writeText(JSON.stringify(kazi, null, 2));
+                  kaziCopy.copy(JSON.stringify(kazi, null, 2));
                 }
               }}
+              copied={kaziCopy.copied}
             />
           </div>
 
@@ -216,9 +228,10 @@ export const TranscriptView: React.FC = () => {
               onCopy={() => {
                 const maamuzi = summary.maamuzi || [];
                 if (maamuzi.length > 0) {
-                  navigator.clipboard.writeText(maamuzi.join('\n'));
+                  maamuziCopy.copy(maamuzi.join('\n'));
                 }
               }}
+              copied={maamuziCopy.copied}
             />
           </div>
 
@@ -229,9 +242,10 @@ export const TranscriptView: React.FC = () => {
               onCopy={() => {
                 const topics = summary.masualaYaliyoahirishwa || [];
                 if (topics.length > 0) {
-                  navigator.clipboard.writeText(topics.join('\n'));
+                  masualaCopy.copy(topics.join('\n'));
                 }
               }}
+              copied={masualaCopy.copied}
             />
           </div>
         </div>
@@ -252,6 +266,53 @@ export const TranscriptView: React.FC = () => {
           Zalisha Muhtasari Upya kwa AI
         </button>
       </div>
+
+      {/* Toast Notifications */}
+      {transcriptCopy.showToast && (
+        <Toast
+          type="success"
+          title="Imenakiliwa!"
+          message="Nakala kamili imenakiliwa kwenye clipboard."
+          onClose={() => {}}
+          show={transcriptCopy.showToast}
+        />
+      )}
+      {summaryCopy.showToast && (
+        <Toast
+          type="success"
+          title="Imenakiliwa!"
+          message="Muhtasari umenakiliwa kwenye clipboard."
+          onClose={() => {}}
+          show={summaryCopy.showToast}
+        />
+      )}
+      {kaziCopy.showToast && (
+        <Toast
+          type="success"
+          title="Imenakiliwa!"
+          message="Kazi za kufuatilia zimenakiliwa kwenye clipboard."
+          onClose={() => {}}
+          show={kaziCopy.showToast}
+        />
+      )}
+      {maamuziCopy.showToast && (
+        <Toast
+          type="success"
+          title="Imenakiliwa!"
+          message="Maamuzi muhimu yamenakiliwa kwenye clipboard."
+          onClose={() => {}}
+          show={maamuziCopy.showToast}
+        />
+      )}
+      {masualaCopy.showToast && (
+        <Toast
+          type="success"
+          title="Imenakiliwa!"
+          message="Masuala yaliyoahirishwa yamenakiliwa kwenye clipboard."
+          onClose={() => {}}
+          show={masualaCopy.showToast}
+        />
+      )}
     </div>
   );
 };

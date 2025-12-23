@@ -5,9 +5,10 @@ import { SummaryCard } from './SummaryCard';
 interface KeyDecisionsCardProps {
   decisions: string[];
   onCopy?: () => void;
+  copied?: boolean;
 }
 
-export const KeyDecisionsCard: React.FC<KeyDecisionsCardProps> = ({ decisions, onCopy }) => {
+export const KeyDecisionsCard: React.FC<KeyDecisionsCardProps> = ({ decisions, onCopy, copied = false }) => {
   const safeDecisions = decisions || [];
 
   if (safeDecisions.length === 0) {
@@ -18,6 +19,7 @@ export const KeyDecisionsCard: React.FC<KeyDecisionsCardProps> = ({ decisions, o
         iconBg="bg-emerald-50"
         iconColor="text-emerald-600"
         onCopy={onCopy}
+        copied={copied}
         content={
           <div className="text-center py-8 text-[#4c599a]">
             <p className="text-sm">Hakuna maamuzi muhimu</p>
@@ -34,6 +36,7 @@ export const KeyDecisionsCard: React.FC<KeyDecisionsCardProps> = ({ decisions, o
       iconBg="bg-emerald-50"
       iconColor="text-emerald-600"
       onCopy={onCopy}
+      copied={copied}
       content={
         <ul className="flex flex-col gap-4">
           {safeDecisions.map((decision, index) => (

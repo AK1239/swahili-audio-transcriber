@@ -7,9 +7,10 @@ import { SummaryCard } from './SummaryCard';
 interface ActionItemsCardProps {
   actionItems: ActionItem[];
   onCopy?: () => void;
+  copied?: boolean;
 }
 
-export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, onCopy }) => {
+export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, onCopy, copied = false }) => {
 
   const safeActionItems = actionItems || [];
 
@@ -21,6 +22,7 @@ export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, o
         iconBg="bg-purple-50"
         iconColor="text-purple-600"
         onCopy={onCopy}
+        copied={copied}
         content={
           <div className="text-center py-8 text-[#4c599a]">
             <p className="text-sm">Hakuna kazi za kufuatilia</p>
@@ -37,6 +39,7 @@ export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, o
       iconBg="bg-purple-50"
       iconColor="text-purple-600"
       onCopy={onCopy}
+      copied={copied}
       content={
         <div className="flex flex-col gap-4">
           {safeActionItems.map((item, index) => (

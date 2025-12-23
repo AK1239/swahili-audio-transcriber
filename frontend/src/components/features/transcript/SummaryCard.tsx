@@ -8,6 +8,7 @@ interface SummaryCardProps {
   iconColor: string;
   content: React.ReactNode;
   onCopy?: () => void;
+  copied?: boolean;
 }
 
 export const SummaryCard: React.FC<SummaryCardProps> = ({
@@ -17,6 +18,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   iconColor,
   content,
   onCopy,
+  copied = false,
 }) => {
   return (
     <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-[#e7e9f3] p-6 md:p-8">
@@ -30,10 +32,16 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
         {onCopy && (
           <button
             onClick={onCopy}
-            className="text-[#4c599a] hover:text-primary p-2 rounded-lg hover:bg-gray-50 transition"
-            title="Nakili"
+            className={`p-2 rounded-lg transition ${
+              copied
+                ? 'text-green-600 bg-green-50'
+                : 'text-[#4c599a] hover:text-primary hover:bg-gray-50'
+            }`}
+            title={copied ? 'Imenakiliwa' : 'Nakili'}
           >
-            <span className="material-symbols-outlined">content_copy</span>
+            <span className="material-symbols-outlined">
+              {copied ? 'check_circle' : 'content_copy'}
+            </span>
           </button>
         )}
       </div>

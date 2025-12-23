@@ -48,7 +48,7 @@ async def upload_audio(
             transcription_id=str(response.id),
             filename=response.filename,
             status=response.status,
-            has_transcript=bool(response.transcriptText),
+            has_transcript=bool(response.transcript_text),
         )
         
         return response

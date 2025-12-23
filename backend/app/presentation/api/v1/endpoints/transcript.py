@@ -42,8 +42,8 @@ async def get_transcript(
             "transcript.response",
             transcription_id=str(transcription_id),
             status=response.status,
-            has_transcript=bool(response.transcriptText),
-            transcript_length=len(response.transcriptText) if response.transcriptText else 0,
+            has_transcript=bool(response.transcript_text),
+            transcript_length=len(response.transcript_text) if response.transcript_text else 0,
         )
         
         return response

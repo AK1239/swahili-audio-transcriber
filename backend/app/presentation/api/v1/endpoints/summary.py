@@ -45,7 +45,7 @@ async def get_summary(
             has_muhtasari=bool(response.muhtasari),
             maamuzi_count=len(response.maamuzi),
             kazi_count=len(response.kazi),
-            masuala_count=len(response.masualaYaliyoahirishwa),
+            masuala_count=len(response.masuala_yaliyoahirishwa),
         )
         
         return response

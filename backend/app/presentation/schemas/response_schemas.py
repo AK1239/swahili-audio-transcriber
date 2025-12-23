@@ -4,6 +4,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 from app.application.dto.summary_dto import ActionItemDTO, SummaryDTO
 from app.application.dto.transcription_dto import TranscriptionDTO
@@ -14,9 +15,9 @@ class TranscriptionResponse(BaseModel):
     id: UUID
     filename: str
     status: str
-    transcriptText: Optional[str] = None
-    createdAt: datetime
-    updatedAt: datetime
+    transcript_text: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
     
     @classmethod
     def from_dto(cls, dto: TranscriptionDTO) -> "TranscriptionResponse":
@@ -25,14 +26,15 @@ class TranscriptionResponse(BaseModel):
             id=dto.id,
             filename=dto.filename,
             status=dto.status,
-            transcriptText=dto.transcript_text,
-            createdAt=dto.created_at,
-            updatedAt=dto.updated_at,
+            transcript_text=dto.transcript_text,
+            created_at=dto.created_at,
+            updated_at=dto.updated_at,
         )
     
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
+        alias_generator=to_camel,
     )
 
 
@@ -40,7 +42,7 @@ class ActionItemResponse(BaseModel):
     """Response schema for action item"""
     person: str
     task: str
-    dueDate: Optional[str] = None
+    due_date: Optional[str] = None
     
     @classmethod
     def from_dto(cls, dto: ActionItemDTO) -> "ActionItemResponse":
@@ -48,39 +50,41 @@ class ActionItemResponse(BaseModel):
         return cls(
             person=dto.person,
             task=dto.task,
-            dueDate=dto.due_date,
+            due_date=dto.due_date,
         )
     
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
+        alias_generator=to_camel,
     )
 
 
 class SummaryResponse(BaseModel):
     """Response schema for summary"""
     id: UUID
-    transcriptionId: UUID
+    transcription_id: UUID
     muhtasari: str
     maamuzi: List[str]
     kazi: List[ActionItemResponse]
-    masualaYaliyoahirishwa: List[str]
+    masuala_yaliyoahirishwa: List[str]
     
     @classmethod
     def from_dto(cls, dto: SummaryDTO) -> "SummaryResponse":
         """Create response from DTO"""
         return cls(
             id=dto.id,
-            transcriptionId=dto.transcription_id,
+            transcription_id=dto.transcription_id,
             muhtasari=dto.muhtasari,
             maamuzi=dto.maamuzi,
             kazi=[ActionItemResponse.from_dto(item) for item in dto.kazi],
-            masualaYaliyoahirishwa=dto.masuala_yaliyoahirishwa,
+            masuala_yaliyoahirishwa=dto.masuala_yaliyoahirishwa,
         )
     
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
+        alias_generator=to_camel,
     )
 
 

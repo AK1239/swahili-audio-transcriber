@@ -1,18 +1,16 @@
 import { Button } from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
+import { TopNav } from "../layout/TopNav";
 
 export function LandingPage() {
   const navigate = useNavigate();
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-background-light/80 border-b border-[#e7e9f3]">
-        <div className="layout-container flex justify-center w-full">
-          <div className="flex items-center justify-between w-full max-w-[1280px] px-4 py-4 md:px-10">
-            <div className="flex items-center gap-3 text-primary cursor-pointer hover:opacity-80 transition-opacity">
-              <span className="material-symbols-outlined text-3xl">graphic_eq</span>
-              <h2 className="text-[#0d101b] text-xl font-bold leading-tight tracking-tight">Swahili AI</h2>
-            </div>
+      <TopNav
+        paddingYClass="py-4"
+        rightContent={
+          <>
             <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
               <nav className="flex items-center gap-8">
                 <a className="text-[#4b5563] text-sm font-medium hover:text-primary transition-colors" href="#features">
@@ -25,10 +23,10 @@ export function LandingPage() {
                   For Teams
                 </a>
               </nav>
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:scale-105"
-                onClick={() => navigate('/upload')}
+                onClick={() => navigate("/upload")}
               >
                 <span>Anza Bure</span>
               </Button>
@@ -37,9 +35,9 @@ export function LandingPage() {
             <div className="md:hidden text-[#0d101b]">
               <span className="material-symbols-outlined">menu</span>
             </div>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="grow flex flex-col items-center w-full">
         {/* Hero Section with Upload */}
@@ -283,7 +281,7 @@ export function LandingPage() {
             <div className="size-6 text-primary">
               <span className="material-symbols-outlined">graphic_eq</span>
             </div>
-            <span className="text-lg font-bold">Swahili AI</span>
+            <span className="text-lg font-bold">Sauti AI</span>
           </div>
           <div className="flex gap-8 flex-wrap justify-center">
             <a className="text-sm text-[#4b5563] hover:text-primary transition-colors" href="#">

@@ -1,11 +1,10 @@
 /** Settings panel component */
 import React from 'react';
 import { Button } from '../../ui/Button';
-import { TranscriptionSettings, Dialect, OutputOptions } from '../../../hooks/useTranscriptionSettings';
+import { TranscriptionSettings, OutputOptions } from '../../../hooks/useTranscriptionSettings';
 
 interface SettingsPanelProps {
   settings: TranscriptionSettings;
-  onDialectChange: (dialect: Dialect) => void;
   onOutputOptionsChange: (options: Partial<OutputOptions>) => void;
   onStartTranscription: () => void;
   hasReadyFiles: boolean;
@@ -14,7 +13,6 @@ interface SettingsPanelProps {
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   settings,
-  onDialectChange,
   onOutputOptionsChange,
   onStartTranscription,
   hasReadyFiles,
@@ -26,26 +24,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <h3 className="text-lg font-bold text-[#0d101b]">Settings / Mipangilio</h3>
         <p className="text-sm text-[#4c599a]">Configure your transcription preferences.</p>
       </div>
-
-      {/* Dialect Selector */}
-      <label className="flex flex-col gap-2">
-        <span className="text-[#0d101b] text-sm font-bold">Dialect / Lahaja</span>
-        <div className="relative">
-          <select
-            value={settings.dialect}
-            onChange={(e) => onDialectChange(e.target.value as Dialect)}
-            className="w-full appearance-none rounded-xl border border-[#cfd3e7] bg-[#f8f9fc] text-[#0d101b] h-12 px-4 pr-10 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
-          >
-            <option value="standard">Standard Swahili (Kiswahili Sanifu)</option>
-            <option value="coast">Coastal Swahili (Kimvita)</option>
-            <option value="congo">Congolese Swahili</option>
-            <option value="sheng">Sheng (Nairobi Slang)</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#4c599a]">
-            <span className="material-symbols-outlined">expand_more</span>
-          </div>
-        </div>
-      </label>
 
       {/* Output Options */}
       <div className="flex flex-col gap-3">
@@ -84,8 +62,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       <div className="bg-blue-50 p-4 rounded-lg flex gap-3 items-start">
         <span className="material-symbols-outlined text-primary text-xl mt-0.5">lightbulb</span>
         <p className="text-sm text-blue-900 leading-relaxed">
-          <strong>Tip:</strong> Ensure your audio has minimal background noise for the best accuracy in Swahili
-          dialects.
+          <strong>Tip:</strong> Ensure your audio has minimal background noise for the best accuracy.
         </p>
       </div>
 

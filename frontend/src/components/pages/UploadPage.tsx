@@ -36,7 +36,6 @@ export function UploadPage() {
   // Settings
   const {
     settings,
-    updateDialect,
     updateOutputOptions,
   } = useTranscriptionSettings();
 
@@ -52,7 +51,7 @@ export function UploadPage() {
   const hasReadyFiles = getReadyFiles().length > 0;
 
   return (
-    <div className="layout-content-container flex flex-col max-w-[960px] w-full flex-1 gap-8">
+    <div className="layout-content-container flex flex-col max-w-5xl w-full flex-1 gap-8">
       {/* Page Heading */}
       <div className="flex flex-col gap-2 p-2">
         <h1 className="text-[#0d101b] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
@@ -82,7 +81,6 @@ export function UploadPage() {
         <div className="lg:col-span-1">
           <SettingsPanel
             settings={settings}
-            onDialectChange={updateDialect}
             onOutputOptionsChange={updateOutputOptions}
             onStartTranscription={handleStartTranscription}
             hasReadyFiles={hasReadyFiles}

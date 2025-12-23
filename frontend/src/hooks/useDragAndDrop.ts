@@ -22,6 +22,7 @@ export function useDragAndDrop(onFileSelect: (file: File) => void) {
       e.stopPropagation();
       setDragActive(false);
 
+      // Only accept the first file (single file upload)
       const file = e.dataTransfer.files[0];
       if (file) {
         onFileSelect(file);

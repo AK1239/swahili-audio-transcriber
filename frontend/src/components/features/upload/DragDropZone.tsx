@@ -42,10 +42,10 @@ export const DragDropZone: React.FC<DragDropZoneProps> = ({
           <span className="material-symbols-outlined text-4xl">cloud_upload</span>
         </div>
         <p className="text-[#0d101b] text-lg font-bold leading-tight">
-          Buruta faili hapa (Drag files here)
+          Buruta faili hapa (Drag file here)
         </p>
         <p className="text-[#4c599a] text-sm font-normal">
-          Supports MP3, WAV, M4A (Max 500MB)
+          Supports MP3, WAV, M4A (Max 500MB) 
         </p>
       </label>
       <Button

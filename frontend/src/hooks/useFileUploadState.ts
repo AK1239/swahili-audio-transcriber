@@ -20,7 +20,8 @@ export function useFileUploadState() {
       file,
       status: 'ready',
     };
-    setUploadedFiles((prev) => [...prev, newFile]);
+    // Replace existing file instead of adding to array (only one file allowed)
+    setUploadedFiles([newFile]);
     return newFile.id;
   }, []);
 

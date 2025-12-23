@@ -48,6 +48,15 @@ class OpenAISummarizationProvider(SummarizationProvider):
             model=self._model,
         )
         
+        # Warn if transcript is very short
+        if len(transcript) < 100:
+            logger.warning(
+                "summarization.short_transcript",
+                transcription_id=str(transcription_id),
+                transcript_length=len(transcript),
+                transcript_preview=transcript[:200],
+            )
+        
         try:
             # Format prompt with code-switching enhancement
             base_prompt = SWAHILI_SUMMARY_PROMPT_TEMPLATE.format(transcript=transcript)
@@ -76,39 +85,91 @@ class OpenAISummarizationProvider(SummarizationProvider):
             # Parse response
             content = response.choices[0].message.content
             if not content:
+                logger.error(
+                    "summarization.empty_response",
+                    transcription_id=str(transcription_id),
+                )
                 raise SummarizationProviderError("Empty response from OpenAI")
+            
+            # Log raw response (truncated for debugging)
+            logger.debug(
+                "summarization.raw_response",
+                transcription_id=str(transcription_id),
+                response_preview=content[:500],  # First 500 chars
+                response_length=len(content),
+            )
             
             # Parse JSON response
             try:
                 summary_data = json.loads(content)
             except json.JSONDecodeError as e:
-                # Don't log here - let the application layer handle error logging
+                # Log the raw response for debugging
+                logger.error(
+                    "summarization.invalid_json",
+                    transcription_id=str(transcription_id),
+                    raw_response=content[:500],  # First 500 chars
+                    error=str(e),
+                )
                 raise SummarizationProviderError(
                     f"Invalid JSON response from OpenAI: {str(e)}"
                 ) from e
+            
+            def get_value(data: dict, *possible_keys):
+                """Get value from dict using multiple possible key formats"""
+                for key in possible_keys:
+                    if key in data:
+                        return data[key]
+                return None
+            
+            # Normalize the summary data
+            normalized_data = {
+                "muhtasari": get_value(summary_data, "muhtasari", "MUHTASARI MFUPI", "muhtasari mfupi"),
+                "maamuzi": get_value(summary_data, "maamuzi", "MAAMUZI MUHIMU", "maamuzi muhimu", "maamuzi"),
+                "kazi": get_value(summary_data, "kazi", "KAZI ZA KUFUATILIA", "kazi za kufuatilia"),
+                "masuala_yaliyoahirishwa": get_value(
+                    summary_data, 
+                    "masuala_yaliyoahirishwa", 
+                    "MASUALA YALIYOAHIRISHWA", 
+                    "masuala yaliyoahirishwa"
+                ),
+            }
+            
+            # Log what OpenAI returned (before creating entity)
+            logger.info(
+                "summarization.openai_response",
+                transcription_id=str(transcription_id),
+                raw_keys=list(summary_data.keys()),  # Log what keys OpenAI returned
+                normalized_muhtasari_length=len(normalized_data.get("muhtasari", "") or ""),
+                normalized_maamuzi_count=len(normalized_data.get("maamuzi", []) or []),
+                normalized_kazi_count=len(normalized_data.get("kazi", []) or []),
+                normalized_masuala_count=len(normalized_data.get("masuala_yaliyoahirishwa", []) or []),
+            )
             
             # Create Summary entity
             from uuid import uuid4
             summary = Summary(
                 id=uuid4(),
                 transcription_id=transcription_id,
-                muhtasari=summary_data.get("muhtasari", ""),
-                maamuzi=summary_data.get("maamuzi", []),
+                muhtasari=normalized_data.get("muhtasari") or "",
+                maamuzi=normalized_data.get("maamuzi") or [],
                 kazi=[
                     ActionItem(
-                        person=item.get("nani", ""),
-                        task=item.get("kazi", ""),
-                        due_date=item.get("tarehe"),
+                        person=item.get("nani", "") or item.get("NANI", ""),
+                        task=item.get("kazi", "") or item.get("KAZI", ""),
+                        due_date=item.get("tarehe") or item.get("TAREHE"),
                     )
-                    for item in summary_data.get("kazi", [])
+                    for item in (normalized_data.get("kazi") or [])
                 ],
-                masuala_yaliyoahirishwa=summary_data.get("masuala_yaliyoahirishwa", []),
+                masuala_yaliyoahirishwa=normalized_data.get("masuala_yaliyoahirishwa") or [],
             )
             
             logger.info(
                 "summarization.completed",
                 transcription_id=str(transcription_id),
                 summary_length=len(summary.muhtasari),
+                maamuzi_count=len(summary.maamuzi),
+                kazi_count=len(summary.kazi),
+                masuala_count=len(summary.masuala_yaliyoahirishwa),
             )
             
             return summary

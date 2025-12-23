@@ -24,8 +24,8 @@ def get_container(request: Request) -> "ApplicationContainer":
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_audio(
+    request: Request,
     file: UploadFile = File(...),
-    request: Request = None,
     container: "ApplicationContainer" = Depends(get_container),
 ) -> TranscriptionResponse:
     """
@@ -34,9 +34,7 @@ async def upload_audio(
     Accepts: .mp3, .wav, .mp4 files up to 25MB
     """
     # Get request_id if available (set by RequestIDMiddleware)
-    request_id = None
-    if request:
-        request_id = getattr(request.state, "request_id", None)
+    request_id = getattr(request.state, "request_id", None)
     bound_logger = logger.bind(request_id=request_id) if request_id else logger
     
     try:

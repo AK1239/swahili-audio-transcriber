@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export function LandingPage() {
+  const navigate = useNavigate();
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root">
       {/* Navbar */}
@@ -23,7 +25,11 @@ export function LandingPage() {
                   For Teams
                 </a>
               </nav>
-              <Button variant="default" className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:scale-105">
+              <Button 
+                variant="default" 
+                className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:scale-105"
+                onClick={() => navigate('/upload')}
+              >
                 <span>Anza Bure</span>
               </Button>
             </div>
@@ -92,7 +98,11 @@ export function LandingPage() {
                       Drag & drop MP3, WAV, or M4A files here to transcribe immediately.
                     </p>
                   </div>
-                  <Button variant="default" className="flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-md w-full sm:w-auto min-w-[160px]">
+                  <Button 
+                    variant="default" 
+                    className="flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-md w-full sm:w-auto min-w-[160px]"
+                    onClick={() => navigate('/upload')}
+                  >
                     Browse Files
                   </Button>
                   <p className="text-xs text-[#9ca3af] mt-2">Max file size: 500MB</p>
@@ -188,7 +198,7 @@ export function LandingPage() {
         {/* Visual Showcase Section */}
         <section className="w-full py-16 md:py-24 bg-background-light">
           <div className="w-full max-w-[1280px] px-4 md:px-10 mx-auto">
-            <div className="bg-linear-to-br from-[#1235e2] to-[#101322] rounded-3xl p-8 md:p-12 lg:p-16 text-white relative overflow-hidden">
+            <div className="bg-linear-to-br from-primary to-[#101322] rounded-3xl p-8 md:p-12 lg:p-16 text-white relative overflow-hidden">
               {/* Background decoration */}
               <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://placeholder.pics/svg/1000')] bg-cover mix-blend-overlay"></div>
               <div className="absolute right-0 bottom-0 opacity-20 transform translate-x-1/4 translate-y-1/4">
@@ -208,7 +218,11 @@ export function LandingPage() {
                     workflow.
                   </p>
                   <div className="flex gap-4 pt-4">
-                    <Button variant="default" className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors">
+                    <Button 
+                      variant="default" 
+                      className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors"
+                      onClick={() => navigate('/upload')}
+                    >
                       Get Started
                     </Button>
                     <Button

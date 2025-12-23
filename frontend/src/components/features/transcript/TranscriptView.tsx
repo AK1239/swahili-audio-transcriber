@@ -1,18 +1,14 @@
 /** Transcript view component */
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useTranscript } from '../../../hooks/useTranscript';
 import { Card } from '../../ui/Card';
 import { ProgressBar } from '../../ui/ProgressBar';
 
-interface TranscriptViewProps {
-  transcriptionId: string | null;
-}
-
-export const TranscriptView: React.FC<TranscriptViewProps> = ({
-  transcriptionId,
-}) => {
+export const TranscriptView: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const { data: transcript, isLoading, error, isFetching } = useTranscript(
-    transcriptionId,
+    id || null,
   );
   
   if (!transcriptionId) {

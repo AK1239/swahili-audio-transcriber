@@ -26,11 +26,6 @@ export const TranscriptView: React.FC = () => {
     }
   };
 
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) return 'Dakika 0';
-    const minutes = Math.floor(seconds / 60);
-    return `Dakika ${minutes}`;
-  };
 
   if (!id) {
     return (
@@ -131,22 +126,7 @@ export const TranscriptView: React.FC = () => {
               <span className="material-symbols-outlined text-[18px]">calendar_today</span>
               {formatDate(transcript.createdAt)}
             </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1 text-sm font-normal">
-              <span className="material-symbols-outlined text-[18px]">schedule</span>
-              {formatDuration()}
-            </span>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-white border border-[#e7e9f3] text-[#0d101b] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-50 transition-colors shadow-sm">
-            <span className="material-symbols-outlined mr-2 text-[20px]">share</span>
-            <span className="truncate">Shiriki</span>
-          </button>
-          <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-white border border-[#e7e9f3] text-[#0d101b] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-50 transition-colors shadow-sm">
-            <span className="material-symbols-outlined mr-2 text-[20px]">edit</span>
-            <span className="truncate">Hariri</span>
-          </button>
         </div>
       </div>
 

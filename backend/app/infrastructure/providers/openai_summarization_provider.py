@@ -71,7 +71,15 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a helpful assistant that summarizes meetings in Swahili. Always respond with valid JSON only.",
+                        "content": """You are a helpful assistant that summarizes meetings in Swahili. 
+Always respond with valid JSON only using this exact structure:
+{
+  "muhtasari": "string",
+  "maamuzi": ["string"],
+  "kazi": [{"nani": "string", "kazi": "string", "tarehe": "string or null"}],
+  "masuala_yaliyoahirishwa": ["string"]
+}
+Use the exact field names as shown above.""",
                     },
                     {
                         "role": "user",
@@ -106,36 +114,22 @@ class OpenAISummarizationProvider(SummarizationProvider):
                     f"Invalid JSON response from OpenAI: {str(e)}"
                 ) from e
             
-            def get_value(data: dict, *possible_keys):
-                """Get value from dict using multiple possible key formats"""
-                for key in possible_keys:
-                    if key in data:
-                        return data[key]
-                return None
-            
-            # Normalize the summary data
+        
+            # Extract and validate data structure
             normalized_data = {
-                "muhtasari": get_value(summary_data, "muhtasari", "MUHTASARI MFUPI", "muhtasari mfupi"),
-                "maamuzi": get_value(summary_data, "maamuzi", "MAAMUZI MUHIMU", "maamuzi muhimu", "maamuzi"),
-                "kazi": get_value(summary_data, "kazi", "KAZI ZA KUFUATILIA", "kazi za kufuatilia"),
-                "masuala_yaliyoahirishwa": get_value(
-                    summary_data, 
-                    "masuala_yaliyoahirishwa", 
-                    "MASUALA YALIYOAHIRISHWA", 
-                    "masuala yaliyoahirishwa"
-                ),
+                "muhtasari": summary_data.get("muhtasari", ""),
+                "maamuzi": summary_data.get("maamuzi", []),
+                "kazi": summary_data.get("kazi", []),
+                "masuala_yaliyoahirishwa": summary_data.get("masuala_yaliyoahirishwa", []),
             }
             
-            # Log what OpenAI returns
-            logger.info(
-                "summarization.openai_response",
-                transcription_id=str(transcription_id),
-                raw_keys=list(summary_data.keys()),  # Log what keys OpenAI returned
-                normalized_muhtasari_length=len(normalized_data.get("muhtasari", "") or ""),
-                normalized_maamuzi_count=len(normalized_data.get("maamuzi", []) or []),
-                normalized_kazi_count=len(normalized_data.get("kazi", []) or []),
-                normalized_masuala_count=len(normalized_data.get("masuala_yaliyoahirishwa", []) or []),
-            )
+            # Validate array types
+            if not isinstance(normalized_data["maamuzi"], list):
+                normalized_data["maamuzi"] = []
+            if not isinstance(normalized_data["kazi"], list):
+                normalized_data["kazi"] = []
+            if not isinstance(normalized_data["masuala_yaliyoahirishwa"], list):
+                normalized_data["masuala_yaliyoahirishwa"] = []
             
             # Create Summary entity
             from uuid import uuid4
@@ -146,11 +140,12 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 maamuzi=normalized_data.get("maamuzi") or [],
                 kazi=[
                     ActionItem(
-                        person=item.get("nani", "") or item.get("NANI", ""),
-                        task=item.get("kazi", "") or item.get("KAZI", ""),
-                        due_date=item.get("tarehe") or item.get("TAREHE"),
+                        person=item.get("nani", "") or "",
+                        task=item.get("kazi", "") or "",
+                        due_date=item.get("tarehe") or None,
                     )
                     for item in (normalized_data.get("kazi") or [])
+                    if isinstance(item, dict)
                 ],
                 masuala_yaliyoahirishwa=normalized_data.get("masuala_yaliyoahirishwa") or [],
             )
@@ -158,10 +153,6 @@ class OpenAISummarizationProvider(SummarizationProvider):
             logger.info(
                 "summarization.completed",
                 transcription_id=str(transcription_id),
-                summary_length=len(summary.muhtasari),
-                maamuzi_count=len(summary.maamuzi),
-                kazi_count=len(summary.kazi),
-                masuala_count=len(summary.masuala_yaliyoahirishwa),
             )
             
             return summary

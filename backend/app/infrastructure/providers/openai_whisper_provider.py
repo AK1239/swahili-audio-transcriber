@@ -36,13 +36,13 @@ class OpenAIWhisperProvider(TranscriptionProvider):
         Raises:
             TranscriptionProviderError: If transcription fails
         """
+        logger.info(
+            "transcription.started",
+            language=language_hint,
+            file_size=len(audio_file),
+        )
+        
         try:
-            logger.info(
-                "Starting transcription",
-                language=language_hint,
-                file_size=len(audio_file),
-            )
-            
             # Create a file-like object from bytes
             audio_file_obj = io.BytesIO(audio_file)
             audio_file_obj.name = "audio.mp3"  # Whisper API needs a filename
@@ -58,7 +58,7 @@ class OpenAIWhisperProvider(TranscriptionProvider):
             transcript = response if isinstance(response, str) else str(response)
             
             logger.info(
-                "Transcription completed",
+                "transcription.completed",
                 language=language_hint,
                 transcript_length=len(transcript),
             )
@@ -66,11 +66,7 @@ class OpenAIWhisperProvider(TranscriptionProvider):
             return transcript
         
         except Exception as e:
-            logger.error(
-                "Transcription failed",
-                error=str(e),
-                error_type=type(e).__name__,
-            )
+            # Don't log here - let the application layer handle error logging
             raise TranscriptionProviderError(
                 f"Failed to transcribe audio: {str(e)}"
             ) from e

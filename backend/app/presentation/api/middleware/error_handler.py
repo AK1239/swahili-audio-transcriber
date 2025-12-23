@@ -12,8 +12,11 @@ logger = get_logger(__name__)
 async def domain_exception_handler(request: Request, exc: DomainException) -> JSONResponse:
     """Handle domain exceptions"""
     error_response = handle_domain_error(exc)
-    logger.warning(
-        "Domain exception",
+    request_id = getattr(request.state, "request_id", None)
+    bound_logger = logger.bind(request_id=request_id) if request_id else logger
+    
+    bound_logger.warning(
+        "error.domain_exception",
         path=request.url.path,
         error_type=type(exc).__name__,
         detail=str(exc),
@@ -26,8 +29,11 @@ async def domain_exception_handler(request: Request, exc: DomainException) -> JS
 
 async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse:
     """Handle value errors"""
-    logger.warning(
-        "Value error",
+    request_id = getattr(request.state, "request_id", None)
+    bound_logger = logger.bind(request_id=request_id) if request_id else logger
+    
+    bound_logger.warning(
+        "error.value_error",
         path=request.url.path,
         error=str(exc),
     )
@@ -39,8 +45,11 @@ async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse
 
 async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle general exceptions"""
-    logger.error(
-        "Unhandled exception",
+    request_id = getattr(request.state, "request_id", None)
+    bound_logger = logger.bind(request_id=request_id) if request_id else logger
+    
+    bound_logger.error(
+        "error.unhandled_exception",
         path=request.url.path,
         error=str(exc),
         error_type=type(exc).__name__,

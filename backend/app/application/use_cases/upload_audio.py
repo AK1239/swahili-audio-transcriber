@@ -47,7 +47,7 @@ class UploadAudioUseCase:
         file_info.validate()
         
         self._logger.info(
-            "Uploading audio file",
+            "upload.started",
             filename=file_info.filename,
             size_bytes=file_info.size_bytes,
         )
@@ -67,15 +67,8 @@ class UploadAudioUseCase:
         
         # Process asynchronously (in background for production)
         # For MVP, we'll process synchronously
-        try:
-            await self._orchestrator.process_transcription(transcription.id)
-        except Exception as e:
-            self._logger.error(
-                "Processing failed",
-                transcription_id=str(transcription.id),
-                error=str(e),
-            )
-            # Re-raise to let caller handle
+        # Don't catch/log here - orchestrator handles error logging
+        await self._orchestrator.process_transcription(transcription.id)
         
         # Return DTO
         updated_transcription = await self._repo.get_by_id(transcription.id)

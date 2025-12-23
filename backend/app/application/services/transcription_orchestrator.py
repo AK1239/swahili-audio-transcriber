@@ -43,7 +43,7 @@ class TranscriptionOrchestrator:
             await self._repo.update(transcription)
             
             self._logger.info(
-                "Starting transcription processing",
+                "transcription.processing.started",
                 transcription_id=str(transcription_id),
             )
             
@@ -61,7 +61,7 @@ class TranscriptionOrchestrator:
             await self._repo.update(transcription)
             
             self._logger.info(
-                "Transcription completed, starting summarization",
+                "transcription.completed",
                 transcription_id=str(transcription_id),
             )
             
@@ -77,13 +77,14 @@ class TranscriptionOrchestrator:
             await self._repo.update(transcription)
             
             self._logger.info(
-                "Processing completed",
+                "transcription.processing.completed",
                 transcription_id=str(transcription_id),
             )
         
         except Exception as e:
+            # Application layer is the ONLY place to log errors
             self._logger.error(
-                "Processing failed",
+                "transcription.processing.failed",
                 transcription_id=str(transcription_id),
                 error=str(e),
                 error_type=type(e).__name__,

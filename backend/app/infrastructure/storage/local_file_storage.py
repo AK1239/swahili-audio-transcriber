@@ -37,7 +37,7 @@ class LocalFileStorage(FileStorage):
         file_path.write_bytes(file_content)
         
         logger.info(
-            "File saved",
+            "storage.file.saved",
             original_filename=filename,
             saved_path=str(file_path),
             file_size=len(file_content),
@@ -63,7 +63,7 @@ class LocalFileStorage(FileStorage):
         content = path.read_bytes()
         
         logger.debug(
-            "File loaded",
+            "storage.file.loaded",
             file_path=file_path,
             file_size=len(content),
         )
@@ -81,7 +81,7 @@ class LocalFileStorage(FileStorage):
         
         if path.exists():
             path.unlink()
-            logger.info("File deleted", file_path=file_path)
+            logger.info("storage.file.deleted", file_path=file_path)
         else:
-            logger.warning("File not found for deletion", file_path=file_path)
+            logger.warning("storage.file.not_found", file_path=file_path)
 

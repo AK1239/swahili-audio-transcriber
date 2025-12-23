@@ -13,6 +13,7 @@ from app.presentation.api.middleware.error_handler import (
     value_error_handler,
 )
 from app.presentation.api.middleware.logging_middleware import LoggingMiddleware
+from app.presentation.api.middleware.request_id_middleware import RequestIDMiddleware
 from app.presentation.api.v1.router import api_router
 from app.domain.exceptions.domain_exceptions import DomainException
 from app.shared.logging import configure_logging
@@ -53,6 +54,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request ID middleware (must be before logging middleware)
+app.add_middleware(RequestIDMiddleware)
 
 # Logging middleware
 app.add_middleware(LoggingMiddleware)

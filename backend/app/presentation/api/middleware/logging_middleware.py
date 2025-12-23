@@ -16,8 +16,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         """Log request and response"""
         start_time = time.time()
         
-        logger.info(
-            "Request started",
+        # Get request ID from request state (set by RequestIDMiddleware)
+        request_id = getattr(request.state, "request_id", None)
+        
+        # Bind request_id to logger context
+        bound_logger = logger.bind(request_id=request_id) if request_id else logger
+        
+        bound_logger.info(
+            "request.started",
             method=request.method,
             path=request.url.path,
             client=request.client.host if request.client else None,
@@ -27,8 +33,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             process_time = time.time() - start_time
             
-            logger.info(
-                "Request completed",
+            # Only log successful requests
+            bound_logger.info(
+                "request.completed",
                 method=request.method,
                 path=request.url.path,
                 status_code=response.status_code,
@@ -39,8 +46,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         
         except Exception as e:
             process_time = time.time() - start_time
-            logger.error(
-                "Request failed",
+            # Only log request-level failures (network, middleware errors)
+            # Application errors are logged in the application layer
+            bound_logger.error(
+                "request.failed",
                 method=request.method,
                 path=request.url.path,
                 error=str(e),

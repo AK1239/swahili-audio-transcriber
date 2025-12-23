@@ -41,14 +41,14 @@ class OpenAISummarizationProvider(SummarizationProvider):
         Raises:
             SummarizationProviderError: If summarization fails
         """
+        logger.info(
+            "summarization.started",
+            transcription_id=str(transcription_id),
+            transcript_length=len(transcript),
+            model=self._model,
+        )
+        
         try:
-            logger.info(
-                "Starting summarization",
-                transcription_id=str(transcription_id),
-                transcript_length=len(transcript),
-                model=self._model,
-            )
-            
             # Format prompt with code-switching enhancement
             base_prompt = SWAHILI_SUMMARY_PROMPT_TEMPLATE.format(transcript=transcript)
             prompt = SwahiliProcessor.enhance_prompt_for_code_switching(
@@ -82,11 +82,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
             try:
                 summary_data = json.loads(content)
             except json.JSONDecodeError as e:
-                logger.error(
-                    "Failed to parse JSON response",
-                    content=content[:200],  # Log first 200 chars
-                    error=str(e),
-                )
+                # Don't log here - let the application layer handle error logging
                 raise SummarizationProviderError(
                     f"Invalid JSON response from OpenAI: {str(e)}"
                 ) from e
@@ -110,7 +106,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
             )
             
             logger.info(
-                "Summarization completed",
+                "summarization.completed",
                 transcription_id=str(transcription_id),
                 summary_length=len(summary.muhtasari),
             )
@@ -120,12 +116,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
         except SummarizationProviderError:
             raise
         except Exception as e:
-            logger.error(
-                "Summarization failed",
-                transcription_id=str(transcription_id),
-                error=str(e),
-                error_type=type(e).__name__,
-            )
+            # Don't log here - let the application layer handle error logging
             raise SummarizationProviderError(
                 f"Failed to summarize transcript: {str(e)}"
             ) from e

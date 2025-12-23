@@ -151,7 +151,7 @@ export const TranscriptView: React.FC = () => {
       </div>
 
       {/* Audio Player */}
-      <AudioPlayer />
+      <AudioPlayer transcriptionId={id} />
 
       {/* View Transcript Button */}
       {transcript.transcriptText && (

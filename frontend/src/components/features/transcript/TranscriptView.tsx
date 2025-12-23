@@ -1,6 +1,7 @@
 /** Transcript view component */
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { useTranscript } from '../../../hooks/useTranscript';
 import { useSummary } from '../../../hooks/useSummary';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -15,7 +16,7 @@ export const TranscriptView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: transcript, isLoading, error } = useTranscript(id || null);
   const { data: summary, isLoading: summaryLoading } = useSummary(id || null);
-
+  const [showTranscript, setShowTranscript] = useState(false);
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -94,6 +95,20 @@ export const TranscriptView: React.FC = () => {
   const filename = transcript.filename || 'Untitled';
   const displayName = filename.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
 
+  // Format transcript text for markdown rendering
+  const formatTranscriptText = (text?: string): string => {
+    if (!text) return '';
+    // Replace escaped newlines with actual newlines
+    // Split by newlines and convert to markdown paragraphs
+    const lines = text.replace(/\\n/g, '\n').trim().split('\n');
+    // Filter out empty lines and create paragraphs
+    const paragraphs = lines
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join('\n\n');
+    return paragraphs;
+  };
+
   return (
     <div className="layout-content-container flex flex-col max-w-[1200px] flex-1">
       {/* Breadcrumbs */}
@@ -137,6 +152,49 @@ export const TranscriptView: React.FC = () => {
 
       {/* Audio Player */}
       <AudioPlayer />
+
+      {/* View Transcript Button */}
+      {transcript.transcriptText && (
+        <div className="p-4">
+          <button
+            onClick={() => setShowTranscript(!showTranscript)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white border border-[#e7e9f3] text-[#0d101b] text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <span className="material-symbols-outlined">
+              {showTranscript ? 'visibility_off' : 'visibility'}
+            </span>
+            <span>{showTranscript ? 'Ficha Nakala' : 'Ona Nakala'}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Transcript View */}
+      {showTranscript && transcript.transcriptText && (
+        <div className="p-4">
+          <SummaryCard
+            title="Nakala Kamili"
+            icon="description"
+            iconBg="bg-green-50"
+            iconColor="text-green-600"
+            onCopy={() => navigator.clipboard.writeText(transcript.transcriptText || '')}
+            content={
+              <div className="prose prose-lg max-w-none text-[#0d101b] leading-relaxed">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <p className="mb-4 text-base md:text-lg leading-7 text-[#0d101b]">
+                        {children}
+                      </p>
+                    ),
+                  }}
+                >
+                  {formatTranscriptText(transcript.transcriptText)}
+                </ReactMarkdown>
+              </div>
+            }
+          />
+        </div>
+      )}
 
       {/* Main Content Grid */}
       {summary ? (

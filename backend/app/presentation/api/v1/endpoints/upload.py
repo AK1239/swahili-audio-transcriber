@@ -33,7 +33,10 @@ async def upload_audio(
     
     Accepts: .mp3, .wav, .mp4 files up to 25MB
     """
-    request_id = getattr(request.state, "request_id", None) if request else None
+    # Get request_id if available (set by RequestIDMiddleware)
+    request_id = None
+    if request:
+        request_id = getattr(request.state, "request_id", None)
     bound_logger = logger.bind(request_id=request_id) if request_id else logger
     
     try:

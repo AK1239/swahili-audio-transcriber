@@ -8,7 +8,7 @@ from app.domain.entities.summary import ActionItem, Summary
 from app.domain.exceptions.validation_exceptions import SummarizationProviderError
 from app.domain.interfaces.summarization_provider import SummarizationProvider
 from app.application.services.swahili_processor import SwahiliProcessor
-from app.infrastructure.providers.prompts import SWAHILI_SUMMARY_PROMPT_TEMPLATE
+from app.infrastructure.providers.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from app.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -58,32 +58,26 @@ class OpenAISummarizationProvider(SummarizationProvider):
             )
         
         try:
-            # Format prompt with code-switching enhancement
-            base_prompt = SWAHILI_SUMMARY_PROMPT_TEMPLATE.format(transcript=transcript)
-            prompt = SwahiliProcessor.enhance_prompt_for_code_switching(
-                base_prompt,
+            # Format user prompt with transcript
+            user_prompt = USER_PROMPT_TEMPLATE.format(transcript=transcript)
+            
+            # Enhance for code-switching awareness (preserve technical terms, names, etc.)
+            user_prompt = SwahiliProcessor.enhance_prompt_for_code_switching(
+                user_prompt,
                 transcript
             )
             
-            # Call OpenAI API
+            # Call OpenAI API with improved prompt structure
             response = await self._client.chat.completions.create(
                 model=self._model,
                 messages=[
                     {
                         "role": "system",
-                        "content": """You are a helpful assistant that summarizes meetings in Swahili. 
-Always respond with valid JSON only using this exact structure:
-{
-  "muhtasari": "string",
-  "maamuzi": ["string"],
-  "kazi": [{"nani": "string", "kazi": "string", "tarehe": "string or null"}],
-  "masuala_yaliyoahirishwa": ["string"]
-}
-Use the exact field names as shown above.""",
+                        "content": SYSTEM_PROMPT,
                     },
                     {
                         "role": "user",
-                        "content": prompt,
+                        "content": user_prompt,
                     },
                 ],
                 temperature=0.3,
@@ -98,6 +92,14 @@ Use the exact field names as shown above.""",
                     transcription_id=str(transcription_id),
                 )
                 raise SummarizationProviderError("Empty response from OpenAI")
+            
+            # Log raw API response for debugging
+            logger.info(
+                "summarization.raw_response",
+                transcription_id=str(transcription_id),
+                raw_response=content,
+                response_length=len(content),
+            )
             
             # Parse JSON response
             try:

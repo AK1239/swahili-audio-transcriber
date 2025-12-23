@@ -169,11 +169,20 @@ class SwahiliProcessor:
             Enhanced prompt
         """
         if cls.detect_code_switching(text):
+            # Extract technical terms found in the transcript
+            technical_terms = cls.extract_technical_terms(text)
+            
             enhancement = (
-                "\n\nMUHIMU: Nakala hii ina mchanganyiko wa Kiswahili na Kiingereza. "
-                "Tafadhali weka istilahi za kiteknolojia na majina ya miradi kama yalivyo "
-                "bila kuyabadilisha. Pia, weka maneno ya Kiingereza yaliyotumika kama yalivyo."
+                "\n\nIMPORTANT: This transcript contains code-switching (Swahili + English). "
+                "Preserve all technical terms, project names, and English words exactly as they appear. "
+                "Do NOT translate technical terms or proper nouns."
             )
+            
+            # Optionally add specific technical terms found
+            if technical_terms:
+                terms_list = ", ".join(sorted(technical_terms)[:10])  # Limit to first 10
+                enhancement += f"\n\nDetected technical terms to preserve: {terms_list}"
+            
             return base_prompt + enhancement
         
         return base_prompt

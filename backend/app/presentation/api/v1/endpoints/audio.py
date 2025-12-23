@@ -56,11 +56,15 @@ async def get_audio(
             filename=filename,
         )
         
-        return FileResponse(
+        response = FileResponse(
             path=str(file_path),
             media_type=content_type,
             filename=filename,
         )
+        
+        response.headers["Accept-Ranges"] = "bytes"
+        
+        return response
     except FileNotFoundError as e:
         bound_logger.warning(
             "audio.file_not_found",

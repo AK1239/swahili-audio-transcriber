@@ -9,6 +9,7 @@ interface AudioPlayerProps {
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const isSeekingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -16,26 +17,37 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
 
   const audioUrl = `${config.apiUrl}${endpoints.audio(transcriptionId)}`;
 
-  // Update current time and progress
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const updateTime = () => {
-      setCurrentTime(audio.currentTime);
-      setProgress((audio.currentTime / audio.duration) * 100 || 0);
+      if (isSeekingRef.current) return;
+      
+      if (audio.duration && isFinite(audio.duration)) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
     };
 
     const updateDuration = () => {
-      setDuration(audio.duration);
+      if (audio.duration && isFinite(audio.duration)) {
+        setDuration(audio.duration);
+      }
     };
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setProgress(0);
+    };
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('loadeddata', updateDuration);
+    audio.addEventListener('canplay', updateDuration);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
@@ -43,6 +55,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('loadeddata', updateDuration);
+      audio.removeEventListener('canplay', updateDuration);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
@@ -61,17 +75,100 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const audio = audioRef.current;
-    if (!audio || !duration) return;
+    if (!audio) return;
+    
+    const audioDuration = audio.duration;
+    if (!audioDuration || !isFinite(audioDuration) || audioDuration <= 0) {
+      return;
+    }
 
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
-    const percentage = clickX / rect.width;
-    const newTime = percentage * duration;
+    const width = rect.width;
+    const percentage = Math.max(0, Math.min(1, clickX / width));
+    const newTime = percentage * audioDuration;
     
-    audio.currentTime = newTime;
-    setCurrentTime(newTime);
-    setProgress(percentage * 100);
+    if (isFinite(newTime) && newTime >= 0 && newTime <= audioDuration) {
+      isSeekingRef.current = true;
+      const wasPlaying = !audio.paused;
+      
+      if (wasPlaying) {
+        audio.pause();
+      }
+      
+      audio.currentTime = newTime;
+      setCurrentTime(newTime);
+      setProgress(percentage * 100);
+      
+      const handleSeeked = () => {
+        const actualTime = audio.currentTime;
+        
+        if (Math.abs(actualTime - newTime) > 1 && actualTime < 1) {
+          setTimeout(() => {
+            if (audio.readyState >= 1) {
+              audio.currentTime = newTime;
+              
+              setTimeout(() => {
+                const retryTime = audio.currentTime;
+                isSeekingRef.current = false;
+                setCurrentTime(retryTime);
+                setProgress((retryTime / audioDuration) * 100);
+                
+                if (wasPlaying) {
+                  audio.play().catch(() => {});
+                }
+              }, 200);
+            }
+          }, 100);
+        } else {
+          isSeekingRef.current = false;
+          setCurrentTime(actualTime);
+          setProgress((actualTime / audioDuration) * 100);
+          
+          if (wasPlaying) {
+            audio.play().catch(() => {});
+          }
+        }
+        
+        audio.removeEventListener('seeked', handleSeeked);
+      };
+      
+      audio.addEventListener('seeked', handleSeeked);
+      
+      setTimeout(() => {
+        if (isSeekingRef.current) {
+          isSeekingRef.current = false;
+          const actualTime = audio.currentTime;
+          
+          if (Math.abs(actualTime - newTime) > 1 && actualTime < 1) {
+            audio.currentTime = newTime;
+            
+            setTimeout(() => {
+              const finalTime = audio.currentTime;
+              setCurrentTime(finalTime);
+              setProgress((finalTime / audioDuration) * 100);
+              
+              if (wasPlaying) {
+                audio.play().catch(() => {});
+              }
+            }, 100);
+          } else {
+            setCurrentTime(actualTime);
+            setProgress((actualTime / audioDuration) * 100);
+            
+            if (wasPlaying) {
+              audio.play().catch(() => {});
+            }
+          }
+        }
+        
+        audio.removeEventListener('seeked', handleSeeked);
+      }, 500);
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -83,7 +180,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
 
   return (
     <>
-      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      <audio ref={audioRef} src={audioUrl} preload="auto" />
       <div className="mx-4 mt-2 mb-8 p-4 bg-white rounded-2xl shadow-sm border border-[#e7e9f3] flex flex-col md:flex-row items-center gap-4 md:gap-6">
         <div className="flex items-center justify-center shrink-0">
           <button
@@ -102,10 +199,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
           </div>
           <div
             className="relative w-full h-12 flex items-center cursor-pointer group"
-            onClick={handleProgressClick}
           >
             {/* Waveform Visual */}
-            <div className="absolute inset-0 flex items-center justify-between gap-[2px] opacity-30">
+            <div className="absolute inset-0 flex items-center justify-between gap-[2px] opacity-30 pointer-events-none">
               {Array.from({ length: 60 }).map((_, i) => (
                 <div
                   key={i}
@@ -115,25 +211,20 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ transcriptionId }) => 
               ))}
             </div>
             {/* Progress Bar */}
-            <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden relative z-10">
+            <div 
+              className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden relative z-10 cursor-pointer"
+              onClick={handleProgressClick}
+            >
               <div
-                className="h-full bg-primary rounded-full transition-all"
+                className="h-full bg-primary rounded-full transition-all pointer-events-none"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
             <div
-              className="absolute left-[35%] top-1/2 -translate-y-1/2 size-4 bg-primary border-2 border-white rounded-full shadow z-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-              style={{ left: `${progress}%` }}
+              className="absolute top-1/2 -translate-y-1/2 size-4 bg-primary border-2 border-white rounded-full shadow z-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+              style={{ left: `calc(${progress}% - 8px)` }}
             ></div>
           </div>
-        </div>
-        <div className="hidden md:flex items-center gap-4">
-          <button className="text-[#4c599a] hover:text-primary transition">
-            <span className="material-symbols-outlined">speed</span>
-          </button>
-          <button className="text-[#4c599a] hover:text-primary transition">
-            <span className="material-symbols-outlined">volume_up</span>
-          </button>
         </div>
       </div>
     </>

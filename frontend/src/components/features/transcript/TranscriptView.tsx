@@ -206,11 +206,17 @@ export const TranscriptView: React.FC = () => {
               icon="summarize"
               iconBg="bg-blue-50"
               iconColor="text-primary"
-              onCopy={() => navigator.clipboard.writeText(summary.muhtasari)}
+              onCopy={() => navigator.clipboard.writeText(summary.muhtasari || '')}
               content={
-                <div className="prose prose-blue max-w-none text-[#0d101b] leading-relaxed text-base md:text-lg">
-                  <div className="whitespace-pre-wrap">{summary.muhtasari}</div>
-                </div>
+                summary.muhtasari && summary.muhtasari.trim() ? (
+                  <div className="prose prose-blue max-w-none text-[#0d101b] leading-relaxed text-base md:text-lg">
+                    <div className="whitespace-pre-wrap">{summary.muhtasari}</div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-[#4c599a]">
+                    <p className="text-sm">Haipatikani</p>
+                  </div>
+                )
               }
             />
           </div>

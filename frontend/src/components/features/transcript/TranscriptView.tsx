@@ -4,6 +4,9 @@ import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranscript } from '../../../hooks/useTranscript';
 import { useSummary } from '../../../hooks/useSummary';
+import { formatDateSwahili } from '../../../utils/formatters';
+import { formatTranscriptText } from '../../../utils/transcriptFormatter';
+import { getDisplayName } from '../../../utils/filename';
 import { Breadcrumbs } from './Breadcrumbs';
 import { AudioPlayer } from './AudioPlayer';
 import { SummaryCard } from './SummaryCard';
@@ -17,14 +20,6 @@ export const TranscriptView: React.FC = () => {
   const { data: transcript, isLoading, error } = useTranscript(id || null);
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useSummary(id || null);
   const [showTranscript, setShowTranscript] = useState(false);
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('sw-KE', { day: 'numeric', month: 'long', year: 'numeric' });
-    } catch {
-      return dateString;
-    }
-  };
 
 
   if (!id) {
@@ -87,22 +82,7 @@ export const TranscriptView: React.FC = () => {
     );
   }
 
-  const filename = transcript.filename || 'Untitled';
-  const displayName = filename.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
-
-  // Format transcript text for markdown rendering
-  const formatTranscriptText = (text?: string): string => {
-    if (!text) return '';
-    // Replace escaped newlines with actual newlines
-    // Split by newlines and convert to markdown paragraphs
-    const lines = text.replace(/\\n/g, '\n').trim().split('\n');
-    // Filter out empty lines and create paragraphs
-    const paragraphs = lines
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .join('\n\n');
-    return paragraphs;
-  };
+  const displayName = getDisplayName(transcript.filename || 'Untitled');
 
   return (
     <div className="layout-content-container flex flex-col max-w-[1200px] flex-1">
@@ -124,7 +104,7 @@ export const TranscriptView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 text-[#4c599a]">
             <span className="flex items-center gap-1 text-sm font-normal">
               <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-              {formatDate(transcript.createdAt)}
+              {formatDateSwahili(transcript.createdAt)}
             </span>
           </div>
         </div>
@@ -162,7 +142,7 @@ export const TranscriptView: React.FC = () => {
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
-                      <p className="mb-4 text-base md:text-lg leading-7 text-[#0d101b]">
+                      <p className="mb-6 text-base md:text-lg leading-8 text-[#0d101b] first:mt-0">
                         {children}
                       </p>
                     ),

@@ -1,6 +1,7 @@
 /** Action items card component */
 import React from 'react';
 import { ActionItem } from '../../../types/summary';
+import { formatDateSwahiliShort } from '../../../utils/formatters';
 import { SummaryCard } from './SummaryCard';
 
 interface ActionItemsCardProps {
@@ -9,15 +10,6 @@ interface ActionItemsCardProps {
 }
 
 export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, onCopy }) => {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('sw-KE', { month: 'short', day: 'numeric' });
-    } catch {
-      return dateString;
-    }
-  };
 
   const safeActionItems = actionItems || [];
 
@@ -60,7 +52,7 @@ export const ActionItemsCard: React.FC<ActionItemsCardProps> = ({ actionItems, o
                 <div className="flex items-center gap-2 mt-2">
                   <div className="size-5 rounded-full bg-cover bg-center bg-gray-300"></div>
                   <span className="text-xs text-[#4c599a] font-medium">
-                    {item.person} {item.dueDate && `• ${formatDate(item.dueDate)}`}
+                    {item.person} {item.dueDate && `• ${formatDateSwahiliShort(item.dueDate)}`}
                   </span>
                 </div>
               </div>

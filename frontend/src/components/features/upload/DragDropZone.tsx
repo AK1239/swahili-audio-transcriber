@@ -32,7 +32,7 @@ export const DragDropZone: React.FC<DragDropZoneProps> = ({
     >
       <input
         type="file"
-        accept=".mp3,.wav,.m4a"
+        accept=".mp3,.wav,.m4a,.webm,.ogg"
         onChange={onFileInput}
         className="hidden"
         id={inputId}
@@ -45,7 +45,7 @@ export const DragDropZone: React.FC<DragDropZoneProps> = ({
           Buruta faili hapa (Drag file here)
         </p>
         <p className="text-[#4c599a] text-sm font-normal">
-          Supports MP3, WAV, M4A (Max 500MB) 
+          Supports MP3, WAV, M4A, WEBM, OGG (Max 25MB) 
         </p>
       </label>
       <Button

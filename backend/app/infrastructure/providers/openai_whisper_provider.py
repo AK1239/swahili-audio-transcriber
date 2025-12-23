@@ -22,6 +22,7 @@ class OpenAIWhisperProvider(TranscriptionProvider):
         self,
         audio_file: bytes,
         language_hint: str = "sw",
+        filename: str | None = None,
     ) -> str:
         """
         Transcribe audio to text using OpenAI Whisper API
@@ -29,6 +30,7 @@ class OpenAIWhisperProvider(TranscriptionProvider):
         Args:
             audio_file: Audio file bytes
             language_hint: Language code hint (default: "sw" for Swahili)
+            filename: Optional filename with extension for proper format detection
         
         Returns:
             Transcribed text
@@ -40,12 +42,18 @@ class OpenAIWhisperProvider(TranscriptionProvider):
             "transcription.started",
             language=language_hint,
             file_size=len(audio_file),
+            filename=filename,
         )
         
         try:
             # Create a file-like object from bytes
             audio_file_obj = io.BytesIO(audio_file)
-            audio_file_obj.name = "audio.mp3"  # Whisper API needs a filename
+            # Use the actual filename if provided, otherwise default to mp3
+            # OpenAI Whisper API uses the filename extension to determine format
+            if filename:
+                audio_file_obj.name = filename
+            else:
+                audio_file_obj.name = "audio.mp3"  # Default fallback
             
             # Call OpenAI Whisper API
             response = await self._client.audio.transcriptions.create(

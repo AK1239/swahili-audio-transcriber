@@ -7,6 +7,7 @@ from app.domain.exceptions.validation_exceptions import (
     FileTooLargeError,
     InvalidFileTypeError,
 )
+from app.infrastructure.config.settings import settings
 
 
 @dataclass(frozen=True)
@@ -21,8 +22,11 @@ class FileInfo:
     
     # Constants
     MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25MB
-    # Extended to support browser recordings (e.g. MediaRecorder -> .webm)
-    ALLOWED_EXTENSIONS = {".mp3", ".wav", ".mp4", ".webm", ".m4a", ".ogg"}
+    
+    @classmethod
+    def get_allowed_extensions(cls) -> set[str]:
+        """Get allowed extensions from settings"""
+        return settings.allowed_extensions_set
     
     @classmethod
     def from_upload_file(
@@ -57,10 +61,11 @@ class FileInfo:
     
     def validate(self) -> None:
         """Validate file info and raise exceptions if invalid"""
-        if self.extension not in self.ALLOWED_EXTENSIONS:
+        allowed_extensions = self.get_allowed_extensions()
+        if self.extension not in allowed_extensions:
             raise InvalidFileTypeError(
                 f"File type {self.extension} not allowed. "
-                f"Allowed types: {', '.join(self.ALLOWED_EXTENSIONS)}"
+                f"Allowed types: {', '.join(sorted(allowed_extensions))}"
             )
         
         if self.size_bytes > self.MAX_FILE_SIZE_BYTES:

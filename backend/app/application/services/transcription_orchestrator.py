@@ -50,10 +50,11 @@ class TranscriptionOrchestrator:
             # Load audio file
             audio_bytes = await self._file_storage.load(transcription.file_path)
             
-            # Transcribe
+            # Transcribe - pass filename so provider can use correct extension
             transcript = await self._transcription_provider.transcribe(
                 audio_bytes,
                 language_hint="sw",
+                filename=transcription.filename,
             )
             
             # Update with transcript

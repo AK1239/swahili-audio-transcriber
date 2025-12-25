@@ -1,4 +1,6 @@
 """Upload audio use case"""
+from typing import Optional
+
 from fastapi import UploadFile
 
 from app.application.dto.transcription_dto import TranscriptionDTO
@@ -25,7 +27,11 @@ class UploadAudioUseCase:
         self._orchestrator = transcription_orchestrator
         self._logger = logger or get_logger(__name__)
     
-    async def execute(self, file: UploadFile) -> TranscriptionDTO:
+    async def execute(
+        self,
+        file: UploadFile,
+        origin: Optional[str] = None,
+    ) -> TranscriptionDTO:
         """
         Upload and process audio file
         
@@ -43,6 +49,7 @@ class UploadAudioUseCase:
             filename=file.filename or "unknown",
             size_bytes=len(file_content),
             content_type=file.content_type,
+            origin=origin,
         )
         file_info.validate()
         
@@ -50,6 +57,7 @@ class UploadAudioUseCase:
             "upload.started",
             filename=file_info.filename,
             size_bytes=file_info.size_bytes,
+            origin=file_info.origin,
         )
         
         # Save file

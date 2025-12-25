@@ -10,7 +10,7 @@ export function useFileUpload() {
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<Transcription | null>(null);
   
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, origin: string = 'file-upload') => {
     setUploading(true);
     setError(null);
     setTranscription(null);
@@ -23,7 +23,7 @@ export function useFileUpload() {
       }
       
       // Upload file
-      const result = await transcriptionService.uploadFile(file);
+      const result = await transcriptionService.uploadFile(file, origin);
       setTranscription(result);
       return result;
     } catch (err) {

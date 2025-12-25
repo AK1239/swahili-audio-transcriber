@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # File Storage
     upload_dir: str = "./uploads"
     max_file_size_mb: int = 25
-    allowed_extensions: str = "mp3,wav,mp4"
+    allowed_extensions: str = "mp3,wav,mp4,webm"
     
     # Application
     environment: str = "development"

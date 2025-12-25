@@ -32,7 +32,10 @@ export function useTranscriptionUpload({ updateFile }: UseTranscriptionUploadPro
             }
           }, 200);
 
-          const result = await uploadFile(uploadedFile.file);
+          const result = await uploadFile(
+            uploadedFile.file,
+            uploadedFile.origin ?? 'file-upload',
+          );
 
           clearInterval(progressInterval);
 

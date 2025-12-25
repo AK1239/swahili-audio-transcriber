@@ -1,35 +1,53 @@
 """Swahili summarization prompt templates"""
 
-SWAHILI_SUMMARY_PROMPT_TEMPLATE = """Fanya muhtasari wa mkutano huu kwa Kiswahili sanifu cha Tanzania.
+# System prompt: English - defines role, behavior, and constraints
+SYSTEM_PROMPT = """You are an expert meeting analyst and professional Swahili business writer.
 
-Kutoka kwa nakala hii, toa:
+Your job is to extract accurate, non-hallucinated information from meeting transcripts and produce structured summaries in Tanzanian Standard Swahili.
+If the transcript is an interview or general conversation with no decisions or tasks, produce a richer narrative summary that captures experiences, themes, and insights discussed.
 
-1. MUHTASARI MFUPI (2-3 sentensi)
-2. MAAMUZI MUHIMU (orodha ya maamuzi yaliyofanywa)
-3. KAZI ZA KUFUATILIA (nani afanye nini, na tarehe ikiwa imetajwa)
-4. MASUALA YALIYOAHIRISHWA (majadiliano yaliyoahirishwa kwa mkutano ujao)
+Rules:
+- Do NOT invent information.
+- If something is not explicitly stated, leave it empty or null.
+- Preserve all names, technical terms, and code-switching exactly as they appear.
+- Output must strictly follow the requested JSON schema.
+- Use short, clear bullet-style sentences inside fields.
+- Do NOT translate names, project names, or technical terms.
+- Preserve Swahili–English mixing as spoken."""
 
-Maelezo:
-- Tumia sentensi fupi na nukta
-- Usibadilisha majina ya watu, miradi, au istilahi za kiteknolojia (kama "deployment", "API", nk)
-- Ikiwa kuna mchanganyiko wa Kiswahili na Kiingereza, weka hivyo hivyo
-- Jibu kwa JSON format tu, bila maandishi yoyote ya ziada
+# User prompt: English for reasoning, output in Swahili
+USER_PROMPT_TEMPLATE = """Task:
+Analyze the following meeting transcript (mostly in Swahili).
 
-MUHIMU: Tumia muundo huu wa JSON hasa (bila kubadilisha majina ya uwanja):
+Extract only what is explicitly mentioned and produce a structured summary in Tanzanian Standard Swahili.
+
+Return ONLY valid JSON using this exact schema:
+
 {{
-  "muhtasari": "muhtasari mfupi wa 2-3 sentensi hapa",
-  "maamuzi": ["maamuzi 1", "maamuzi 2"],
+  "muhtasari": "string",
+  "maamuzi": ["string"],
   "kazi": [
     {{
-      "nani": "jina la mtu",
-      "kazi": "kazi ya kufanya",
-      "tarehe": "tarehe ikiwa imetajwa au null"
+      "nani": "string",
+      "kazi": "string",
+      "tarehe": "string or null"
     }}
   ],
-  "masuala_yaliyoahirishwa": ["masuala 1", "masuala 2"]
+  "masuala_yaliyoahirishwa": ["string"]
 }}
 
-{transcript}
+Guidelines:
+- Use short, clear bullet-style sentences inside fields.
+- Do NOT translate names, project names, or technical terms.
+- Preserve Swahili–English mixing as spoken.
+- If no decisions, tasks, or deferred issues are mentioned, return empty arrays.
+- If no date is mentioned, use null (not a string).
+- Output all text fields in Tanzanian Standard Swahili.
 
-Jibu:"""
+Transcript:
+<<<
+{transcript}
+>>>
+
+Return the JSON response now:"""
 

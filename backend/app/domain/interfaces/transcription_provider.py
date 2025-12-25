@@ -10,6 +10,7 @@ class TranscriptionProvider(ABC):
         self,
         audio_file: bytes,
         language_hint: str = "sw",
+        filename: str | None = None,
     ) -> str:
         """
         Transcribe audio to text
@@ -17,6 +18,7 @@ class TranscriptionProvider(ABC):
         Args:
             audio_file: Audio file bytes
             language_hint: Language code hint (default: "sw" for Swahili)
+            filename: Optional filename with extension for proper format detection
         
         Returns:
             Transcribed text

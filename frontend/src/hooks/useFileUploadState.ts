@@ -9,16 +9,19 @@ export interface UploadedFile {
   progress?: number;
   transcription?: Transcription;
   error?: string;
+  /** Optional source of the file (e.g. 'file-upload', 'browser-recording') */
+  origin?: string;
 }
 
 export function useFileUploadState() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
-  const addFile = useCallback((file: File) => {
+  const addFile = useCallback((file: File, origin: string = 'file-upload') => {
     const newFile: UploadedFile = {
       id: `${Date.now()}-${Math.random()}`,
       file,
       status: 'ready',
+      origin,
     };
     // Replace existing file instead of adding to array (only one file allowed)
     setUploadedFiles([newFile]);

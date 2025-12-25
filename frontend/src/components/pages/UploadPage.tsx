@@ -68,8 +68,8 @@ export function UploadPage() {
         {/* Left Column: Upload & Record Area */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <RecordPanel
-            onRecordingReady={(file) => {
-              addFile(file, 'browser-recording');
+            onRecordingReady={(file, origin) => {
+              addFile(file, origin);
               setShowToast(true);
               setTimeout(() => setShowToast(false), 3000);
             }}

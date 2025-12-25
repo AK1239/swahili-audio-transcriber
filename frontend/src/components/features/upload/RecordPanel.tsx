@@ -1,14 +1,16 @@
 /** Record audio panel component */
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '../../ui/Button';
-import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
+import { useUnifiedAudioRecorder, RecordingMode } from '../../../hooks/useUnifiedAudioRecorder';
 
 interface RecordPanelProps {
   /** Called when a new recording is ready to be sent for transcription */
-  onRecordingReady: (file: File) => void;
+  onRecordingReady: (file: File, origin: string) => void;
 }
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({ onRecordingReady }) => {
+  const [recordingMode, setRecordingMode] = useState<RecordingMode>('microphone');
+  
   const {
     status,
     isRecording,
@@ -19,7 +21,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onRecordingReady }) =>
     stopRecording,
     reset,
     hasRecording,
-  } = useAudioRecorder({ maxDurationSeconds: 60 * 60 }); // up to 60 minutes
+  } = useUnifiedAudioRecorder({ 
+    mode: recordingMode,
+    maxDurationSeconds: 60 * 60 // up to 60 minutes
+  });
 
   const formattedDuration = new Date(durationSeconds * 1000)
     .toISOString()
@@ -31,7 +36,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onRecordingReady }) =>
 
   const handleSend = () => {
     if (audioFile) {
-      onRecordingReady(audioFile);
+      const origin = recordingMode === 'microphone' ? 'browser-recording-mic' : 'browser-recording-tab';
+      onRecordingReady(audioFile, origin);
       // Keep the recording visible but allow user to re-record if they want
     }
   };
@@ -40,23 +46,66 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onRecordingReady }) =>
     reset();
   };
 
+  const handleModeChange = (mode: RecordingMode) => {
+    if (!isRecording) {
+      reset();
+      setRecordingMode(mode);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 rounded-xl bg-white border border-[#e7e9f3] p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined">mic</span>
+            <span className="material-symbols-outlined">
+              {recordingMode === 'microphone' ? 'mic' : 'tab'}
+            </span>
           </div>
           <div className="flex flex-col">
             <span className="text-base font-bold text-[#0d101b]">
               Rekodi Mkutano Moja kwa Moja
             </span>
             <span className="text-xs text-[#4c599a]">
-              Tumia kipaza sauti chako kurekodi na kisha tutatengeneza transcript na muhtasari.
+              {recordingMode === 'microphone' 
+                ? 'Tumia kipaza sauti chako kurekodi na kisha tutatengeneza transcript na muhtasari.'
+                : 'Rekodi sauti kutoka kwenye tab (k.m. Google Meet). Chagua tab na wezesha "Share tab audio".'}
             </span>
           </div>
         </div>
       </div>
+
+      {/* Recording Mode Selector */}
+      {!isRecording && status !== 'stopped' && (
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-lg border border-[#e7e9f3]">
+          <button
+            type="button"
+            onClick={() => handleModeChange('microphone')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              recordingMode === 'microphone'
+                ? 'bg-white text-primary shadow-sm border border-primary/20'
+                : 'text-[#4c599a] hover:text-[#0d101b]'
+            }`}
+            disabled={isRecording}
+          >
+            <span className="material-symbols-outlined text-lg">mic</span>
+            <span>Kipaza Sauti</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleModeChange('tab')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              recordingMode === 'tab'
+                ? 'bg-white text-primary shadow-sm border border-primary/20'
+                : 'text-[#4c599a] hover:text-[#0d101b]'
+            }`}
+            disabled={isRecording}
+          >
+            <span className="material-symbols-outlined text-lg">tab</span>
+            <span>Sauti ya Tab</span>
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center justify-between bg-gray-50 border border-[#e7e9f3] rounded-xl px-4 py-3">
         <div className="flex items-center gap-2">

@@ -21,9 +21,31 @@ class Settings(BaseSettings):
     openai_whisper_model: str = "whisper-1"  # Whisper model for transcription, can be overridden via env
     
     # File Storage
-    upload_dir: str = "./uploads"
+    upload_dir: str = "./uploads"  # For local development
+    storage_type: str = Field(
+        default="local",
+        description="Storage type: 'local' for filesystem, 'r2' for Cloudflare R2"
+    )
     max_file_size_mb: int = 25
     allowed_extensions: str = "mp3,wav,mp4,webm"
+    
+    # Cloudflare R2 settings (required if storage_type is 'r2')
+    r2_account_id: str | None = Field(
+        default=None,
+        description="Cloudflare R2 account ID"
+    )
+    r2_access_key_id: str | None = Field(
+        default=None,
+        description="Cloudflare R2 access key ID"
+    )
+    r2_secret_access_key: str | None = Field(
+        default=None,
+        description="Cloudflare R2 secret access key"
+    )
+    r2_bucket_name: str | None = Field(
+        default=None,
+        description="Cloudflare R2 bucket name"
+    )
     
     # Application
     environment: str = "development"

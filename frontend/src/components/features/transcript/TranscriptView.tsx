@@ -8,6 +8,7 @@ import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 import { formatDateSwahili } from '../../../utils/formatters';
 import { formatTranscriptText } from '../../../utils/transcriptFormatter';
 import { getDisplayName } from '../../../utils/filename';
+import { pdfService } from '../../../services/pdfService';
 import { Breadcrumbs } from './Breadcrumbs';
 import { AudioPlayer } from './AudioPlayer';
 import { SummaryCard } from './SummaryCard';
@@ -22,6 +23,9 @@ export const TranscriptView: React.FC = () => {
   const { data: transcript, isLoading, error } = useTranscript(id || null);
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useSummary(id || null);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [pdfExportError, setPdfExportError] = useState<string | null>(null);
+  const [pdfExportSuccess, setPdfExportSuccess] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   
   // Copy hooks for each section
   const transcriptCopy = useCopyToClipboard();
@@ -29,6 +33,27 @@ export const TranscriptView: React.FC = () => {
   const kaziCopy = useCopyToClipboard();
   const maamuziCopy = useCopyToClipboard();
   const masualaCopy = useCopyToClipboard();
+  
+  // PDF export handler
+  const handleExportPDF = () => {
+    if (!transcript || transcript.status !== 'completed') return;
+    
+    setIsExportingPdf(true);
+    setPdfExportError(null);
+    setPdfExportSuccess(false);
+    
+    try {
+      pdfService.exportToPDF(transcript, summary || null);
+      setPdfExportSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setPdfExportSuccess(false), 3000);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to export PDF';
+      setPdfExportError(errorMessage);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
 
   if (!id) {
@@ -117,6 +142,20 @@ export const TranscriptView: React.FC = () => {
             </span>
           </div>
         </div>
+        {transcript.status === 'completed' && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportPDF}
+              disabled={isExportingPdf}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined">
+                {isExportingPdf ? 'hourglass_empty' : 'picture_as_pdf'}
+              </span>
+              <span>{isExportingPdf ? 'Inaandaa...' : 'Pakua PDF'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Audio Player */}
@@ -311,6 +350,24 @@ export const TranscriptView: React.FC = () => {
           message="Masuala yaliyoahirishwa yamenakiliwa kwenye clipboard."
           onClose={() => {}}
           show={masualaCopy.showToast}
+        />
+      )}
+      {pdfExportSuccess && (
+        <Toast
+          type="success"
+          title="Imefanikiwa!"
+          message="PDF imepakuliwa kwa mafanikio."
+          onClose={() => setPdfExportSuccess(false)}
+          show={pdfExportSuccess}
+        />
+      )}
+      {pdfExportError && (
+        <Toast
+          type="error"
+          title="Hitilafu"
+          message={pdfExportError}
+          onClose={() => setPdfExportError(null)}
+          show={!!pdfExportError}
         />
       )}
     </div>

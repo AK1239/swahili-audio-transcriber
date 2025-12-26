@@ -14,6 +14,7 @@ from app.infrastructure.repositories.transcription_repository_impl import (
     TranscriptionRepositoryImpl,
 )
 from app.infrastructure.storage.local_file_storage import LocalFileStorage
+from app.infrastructure.storage.cloudflare_r2_storage import CloudflareR2Storage
 from app.shared.logging import get_logger
 
 
@@ -45,8 +46,31 @@ class ApplicationContainer:
             model=settings.openai_model
         )
         
-        # Storage
-        self._file_storage = LocalFileStorage(upload_dir=settings.upload_dir)
+        # Storage - choose based on settings
+        if settings.storage_type == "r2":
+            # Validate R2 credentials
+            if not all([
+                settings.r2_account_id,
+                settings.r2_access_key_id,
+                settings.r2_secret_access_key,
+                settings.r2_bucket_name,
+            ]):
+                raise ValueError(
+                    "R2 storage selected but missing credentials. "
+                    "Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME"
+                )
+            
+            self._file_storage = CloudflareR2Storage(
+                account_id=settings.r2_account_id,
+                access_key_id=settings.r2_access_key_id,
+                secret_access_key=settings.r2_secret_access_key,
+                bucket_name=settings.r2_bucket_name,
+            )
+            self._logger.info("storage.initialized", storage_type="r2")
+        else:
+            # Default to local storage
+            self._file_storage = LocalFileStorage(upload_dir=settings.upload_dir)
+            self._logger.info("storage.initialized", storage_type="local")
         
         # Initialize use cases after repository is available (lazy initialization)
         self._upload_audio_use_case = None

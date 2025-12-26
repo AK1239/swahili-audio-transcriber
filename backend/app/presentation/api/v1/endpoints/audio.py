@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from io import BytesIO
 
 from app.shared.logging import get_logger
 
@@ -42,29 +43,71 @@ async def get_audio(
             content_type = "audio/mp4"
         elif filename.endswith(".mp3"):
             content_type = "audio/mpeg"
+        elif filename.endswith(".webm"):
+            content_type = "audio/webm"
+        elif filename.endswith(".m4a"):
+            content_type = "audio/mp4"
+        elif filename.endswith(".ogg"):
+            content_type = "audio/ogg"
         
-        # Return file response using file path directly
+        # Get file storage from container
+        file_storage = container._file_storage
+        
+        # Check if using local storage (file_path is a local path)
         from pathlib import Path
         file_path = Path(transcription.file_path)
         
-        if not file_path.exists():
-            raise FileNotFoundError(f"Audio file not found: {file_path}")
+        # If file exists locally, use FileResponse (for local storage)
+        if file_path.exists() and file_path.is_absolute():
+            bound_logger.info(
+                "audio.response.local",
+                transcription_id=str(transcription_id),
+                filename=filename,
+            )
+            
+            response = FileResponse(
+                path=str(file_path),
+                media_type=content_type,
+                filename=filename,
+            )
+            response.headers["Accept-Ranges"] = "bytes"
+            return response
         
-        bound_logger.info(
-            "audio.response",
-            transcription_id=str(transcription_id),
-            filename=filename,
-        )
-        
-        response = FileResponse(
-            path=str(file_path),
-            media_type=content_type,
-            filename=filename,
-        )
-        
-        response.headers["Accept-Ranges"] = "bytes"
-        
-        return response
+        # Otherwise, load from cloud storage (R2)
+        try:
+            audio_bytes = await file_storage.load(transcription.file_path)
+            
+            bound_logger.info(
+                "audio.response.cloud",
+                transcription_id=str(transcription_id),
+                filename=filename,
+                file_size=len(audio_bytes),
+            )
+            
+            # Create streaming response from bytes
+            response = StreamingResponse(
+                iter([audio_bytes]),
+                media_type=content_type,
+                headers={
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(len(audio_bytes)),
+                    "Content-Disposition": f'inline; filename="{filename}"',
+                }
+            )
+            
+            return response
+            
+        except FileNotFoundError as e:
+            bound_logger.warning(
+                "audio.file_not_found",
+                transcription_id=str(transcription_id),
+                file_path=transcription.file_path,
+                error=str(e),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Audio file not found: {str(e)}",
+            )
     except FileNotFoundError as e:
         bound_logger.warning(
             "audio.file_not_found",

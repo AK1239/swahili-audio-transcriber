@@ -89,11 +89,14 @@ npm run dev
 3. Connect GitHub repository
 4. Add PostgreSQL service
 5. Set environment variables:
-   - `DATABASE_URL` (auto-set by Railway)
-   - `OPENAI_API_KEY`
+   - `DATABASE_URL` (auto-set by Railway when you add PostgreSQL)
+   - `OPENAI_API_KEY` (your OpenAI API key)
    - `ENVIRONMENT=production`
-   - `CORS_ORIGINS=https://your-frontend-domain.com`
-6. Deploy
+   - `CORS_ORIGINS=https://your-frontend-domain.com` (your Vercel/Netlify URL)
+   - `STORAGE_TYPE=r2` (for cloud storage)
+   - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` (Cloudflare R2 credentials)
+6. Run database migrations: `alembic upgrade head` (Railway can run this automatically)
+7. Deploy
 
 **Frontend:**
 
@@ -145,34 +148,62 @@ alembic upgrade head
 
 ### Backend
 
-Required:
+**Required:**
 
 - `OPENAI_API_KEY`: Your OpenAI API key
-- `DATABASE_URL`: Database connection string
 
-Optional:
+**Database (Required for Production):**
+
+- `DATABASE_URL`: Database connection string
+  - **Development**: SQLite (default) - `sqlite+aiosqlite:///./transcriptions.db`
+  - **Production**: PostgreSQL - `postgresql+asyncpg://user:password@host:port/dbname`
+
+**File Storage:**
+
+- `STORAGE_TYPE`: `"local"` (default) or `"r2"` (for Cloudflare R2)
+- **If using R2 (Required when STORAGE_TYPE=r2):**
+  - `R2_ACCOUNT_ID`: Cloudflare account ID
+  - `R2_ACCESS_KEY_ID`: R2 access key ID
+  - `R2_SECRET_ACCESS_KEY`: R2 secret access key
+  - `R2_BUCKET_NAME`: R2 bucket name
+
+**Optional:**
 
 - `ENVIRONMENT`: `development` or `production` (default: `development`)
 - `LOG_LEVEL`: Logging level (default: `INFO`)
-- `CORS_ORIGINS`: Comma-separated list of allowed origins
-- `UPLOAD_DIR`: Directory for file uploads (default: `./uploads`)
+- `CORS_ORIGINS`: Comma-separated list of allowed origins (default: `http://localhost:5173`)
+- `UPLOAD_DIR`: Directory for file uploads (default: `./uploads`) - only used if `STORAGE_TYPE=local`
 - `MAX_FILE_SIZE_MB`: Maximum file size in MB (default: `25`)
+- `ALLOWED_EXTENSIONS`: Comma-separated list (default: `mp3,wav,mp4,webm`)
+- `OPENAI_MODEL`: OpenAI model for summarization (default: `gpt-3.5-turbo`)
+- `OPENAI_WHISPER_MODEL`: OpenAI Whisper model (default: `whisper-1`)
 
 ### Frontend
 
-Required:
+**Required:**
 
 - `VITE_API_URL`: Backend API URL
+  - **Development**: `http://localhost:8000/api/v1`
+  - **Production**: `https://your-backend-url.railway.app/api/v1` (or your backend URL)
 
 ## File Storage
 
-For production, consider using cloud storage:
+Cloud storage is **required for production** as local file storage won't persist on most hosting platforms.
 
-- Cloudflare R2 (free tier: 10GB)
-- AWS S3
-- Google Cloud Storage
+**Recommended: Cloudflare R2 (Free Tier)**
 
-Update `LocalFileStorage` implementation or create a new `CloudFileStorage` implementation.
+- ✅ 10GB storage free
+- ✅ Unlimited egress (no bandwidth charges)
+- ✅ S3-compatible API
+- ✅ Already implemented in the codebase
+
+**Setup:**
+
+1. Create Cloudflare account at [cloudflare.com](https://cloudflare.com)
+2. Enable R2 in dashboard
+3. Create a bucket
+4. Create API tokens (Manage R2 API Tokens)
+5. Set environment variables (see above)
 
 ## Monitoring
 

@@ -1,4 +1,5 @@
 """Application settings using Pydantic"""
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,7 +7,13 @@ class Settings(BaseSettings):
     """Application settings"""
     
     # Database
-    database_url: str = "sqlite+aiosqlite:///./transcriptions.db"
+    # Default to SQLite for local development
+    # For production, set DATABASE_URL environment variable to PostgreSQL connection string
+    # Format: postgresql+asyncpg://user:password@host:port/dbname
+    database_url: str = Field(
+        default="sqlite+aiosqlite:///./transcriptions.db",
+        description="Database URL. Use PostgreSQL for production: postgresql+asyncpg://user:pass@host:port/dbname"
+    )
     
     # OpenAI
     openai_api_key: str

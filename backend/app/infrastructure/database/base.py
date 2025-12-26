@@ -1,7 +1,7 @@
 """SQLAlchemy base configuration"""
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import NullPool
 
 from app.infrastructure.config.settings import settings
 
@@ -9,9 +9,9 @@ from app.infrastructure.config.settings import settings
 is_postgresql = settings.database_url.startswith("postgresql")
 
 # Configure engine with appropriate pool settings
+# For async engines, SQLAlchemy automatically uses async-adapted pools
 # PostgreSQL: Use connection pooling for better performance
 # SQLite: Use NullPool (no pooling needed for SQLite)
-pool_class = QueuePool if is_postgresql else NullPool
 pool_kwargs = {}
 if is_postgresql:
     # PostgreSQL connection pool settings
@@ -21,13 +21,17 @@ if is_postgresql:
         "pool_pre_ping": True,  # Verify connections before using
         "pool_recycle": 3600,  # Recycle connections after 1 hour
     }
+else:
+    # SQLite: Use NullPool (no pooling needed)
+    pool_kwargs = {
+        "poolclass": NullPool,
+    }
 
 # Create async engine
 engine = create_async_engine(
     settings.database_url,
     echo=False,  # Disable SQL query logging
     future=True,
-    poolclass=pool_class,
     **pool_kwargs,
 )
 

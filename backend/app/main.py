@@ -24,7 +24,14 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     configure_logging(settings.log_level)
-    await create_tables()
+    
+    try:
+        await create_tables()
+    except Exception as e:
+        # Log error but don't crash - tables might already exist
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Could not create tables (they may already exist): {e}")
     
     # Initialize dependency injection container
     from app.container import ApplicationContainer

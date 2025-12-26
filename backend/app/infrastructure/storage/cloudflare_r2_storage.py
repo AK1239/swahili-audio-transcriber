@@ -41,12 +41,20 @@ class CloudflareR2Storage(FileStorage):
         self._endpoint_url = f"https://{account_id}.r2.cloudflarestorage.com"
         
         # Create S3 client configured for R2
+        # Note: R2 doesn't use regions, but boto3 requires one, so we use 'auto'
+        # Use path-style addressing which is more compatible with R2
         self._s3_client = boto3.client(
             's3',
             endpoint_url=self._endpoint_url,
             aws_access_key_id=access_key_id,
             aws_secret_access_key=secret_access_key,
-            config=Config(signature_version='s3v4'),
+            region_name='auto',  # R2 doesn't use regions, but boto3 requires this
+            config=Config(
+                signature_version='s3v4',
+                s3={
+                    'addressing_style': 'path',  # Use path-style for R2 compatibility
+                }
+            ),
         )
         
         logger.info(

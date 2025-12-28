@@ -26,7 +26,7 @@ class Settings(BaseSettings):
         default="local",
         description="Storage type: 'local' for filesystem, 'r2' for Cloudflare R2"
     )
-    max_file_size_mb: int = 25
+    max_file_size_mb: int = 30
     allowed_extensions: str = "mp3,wav,mp4,webm"
     
     # Cloudflare R2 settings (required if storage_type is 'r2')

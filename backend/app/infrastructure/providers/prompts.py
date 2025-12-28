@@ -11,7 +11,9 @@ Rules:
 - If something is not explicitly stated, leave it empty or null.
 - Preserve all names, technical terms, and code-switching exactly as they appear.
 - Output must strictly follow the requested JSON schema.
-- Use short, clear bullet-style sentences inside fields.
+- Write detailed, comprehensive summaries that capture all key points, main themes, important discussions, and insights.
+- The muhtasari (summary) should be thorough enough that someone reading it understands the main points and context of the entire conversation.
+- Use clear, well-structured paragraphs and sentences (not just bullet points) to provide context and detail.
 - Do NOT translate names, project names, or technical terms.
 - Preserve Swahili–English mixing as spoken."""
 
@@ -37,7 +39,12 @@ Return ONLY valid JSON using this exact schema:
 }}
 
 Guidelines:
-- Use short, clear bullet-style sentences inside fields.
+- Write a detailed, comprehensive muhtasari (summary) that captures all key points, main themes, important discussions, and insights from the transcript.
+- The summary should be thorough enough (typically 3-5 paragraphs or 200-400 words) so that someone reading it fully understands the main points and context of the conversation.
+- Use clear, well-structured paragraphs with proper context and detail - not just brief bullet points.
+- For maamuzi (decisions): Extract all important decisions, agreements, or conclusions that were explicitly made or stated.
+- For kazi (action items): Extract all tasks, assignments, or action items mentioned, including who is responsible (nani) and what needs to be done (kazi). Include dates (tarehe) if mentioned.
+- For masuala_yaliyoahirishwa (deferred topics): Extract any topics, issues, or discussions that were postponed, deferred, or mentioned as needing to be discussed later.
 - Do NOT translate names, project names, or technical terms.
 - Preserve Swahili–English mixing as spoken.
 - If no decisions, tasks, or deferred issues are mentioned, return empty arrays.

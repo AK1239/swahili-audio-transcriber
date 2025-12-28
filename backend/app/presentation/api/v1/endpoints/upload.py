@@ -32,7 +32,7 @@ async def upload_audio(
     """
     Upload audio file for transcription
     
-    Accepts: .mp3, .wav, .mp4, .webm files up to 25MB.
+    Accepts: .mp3, .wav, .mp4, .webm files up to 30MB.
     Optional form field `origin` can be used to indicate the source
     (e.g. "file-upload", "browser-recording", "meet-extension").
     """

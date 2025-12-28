@@ -93,7 +93,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 )
                 raise SummarizationProviderError("Empty response from OpenAI")
             
-            # Log raw API response for debugging
+            # Log raw API response for debugging (full content)
             logger.info(
                 "summarization.raw_response",
                 transcription_id=str(transcription_id),
@@ -104,12 +104,28 @@ class OpenAISummarizationProvider(SummarizationProvider):
             # Parse JSON response
             try:
                 summary_data = json.loads(content)
+                # Log parsed JSON structure for debugging
+                logger.info(
+                    "summarization.parsed_json",
+                    transcription_id=str(transcription_id),
+                    json_keys=list(summary_data.keys()) if isinstance(summary_data, dict) else "not_a_dict",
+                    muhtasari_present="muhtasari" in summary_data if isinstance(summary_data, dict) else False,
+                    maamuzi_present="maamuzi" in summary_data if isinstance(summary_data, dict) else False,
+                    kazi_present="kazi" in summary_data if isinstance(summary_data, dict) else False,
+                    masuala_present="masuala_yaliyoahirishwa" in summary_data if isinstance(summary_data, dict) else False,
+                    maamuzi_type=type(summary_data.get("maamuzi")).__name__ if isinstance(summary_data, dict) else "N/A",
+                    kazi_type=type(summary_data.get("kazi")).__name__ if isinstance(summary_data, dict) else "N/A",
+                    masuala_type=type(summary_data.get("masuala_yaliyoahirishwa")).__name__ if isinstance(summary_data, dict) else "N/A",
+                    maamuzi_value=summary_data.get("maamuzi") if isinstance(summary_data, dict) else "N/A",
+                    kazi_value=summary_data.get("kazi") if isinstance(summary_data, dict) else "N/A",
+                    masuala_value=summary_data.get("masuala_yaliyoahirishwa") if isinstance(summary_data, dict) else "N/A",
+                )
             except json.JSONDecodeError as e:
                 # Log the raw response for debugging
                 logger.error(
                     "summarization.invalid_json",
                     transcription_id=str(transcription_id),
-                    raw_response=content[:500],  # First 500 chars
+                    raw_response=content[:1000],  # First 1000 chars for better debugging
                     error=str(e),
                 )
                 raise SummarizationProviderError(
@@ -125,13 +141,52 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 "masuala_yaliyoahirishwa": summary_data.get("masuala_yaliyoahirishwa", []),
             }
             
+            # Log normalized data before validation
+            logger.info(
+                "summarization.before_validation",
+                transcription_id=str(transcription_id),
+                muhtasari_length=len(normalized_data.get("muhtasari", "")),
+                maamuzi_count=len(normalized_data.get("maamuzi", [])) if isinstance(normalized_data.get("maamuzi"), list) else "not_list",
+                kazi_count=len(normalized_data.get("kazi", [])) if isinstance(normalized_data.get("kazi"), list) else "not_list",
+                masuala_count=len(normalized_data.get("masuala_yaliyoahirishwa", [])) if isinstance(normalized_data.get("masuala_yaliyoahirishwa"), list) else "not_list",
+                maamuzi_sample=normalized_data.get("maamuzi", [])[:3] if isinstance(normalized_data.get("maamuzi"), list) else normalized_data.get("maamuzi"),
+                kazi_sample=normalized_data.get("kazi", [])[:3] if isinstance(normalized_data.get("kazi"), list) else normalized_data.get("kazi"),
+            )
+            
             # Validate array types
             if not isinstance(normalized_data["maamuzi"], list):
+                logger.warning(
+                    "summarization.maamuzi_not_list",
+                    transcription_id=str(transcription_id),
+                    actual_type=type(normalized_data["maamuzi"]).__name__,
+                    value=normalized_data["maamuzi"],
+                )
                 normalized_data["maamuzi"] = []
             if not isinstance(normalized_data["kazi"], list):
+                logger.warning(
+                    "summarization.kazi_not_list",
+                    transcription_id=str(transcription_id),
+                    actual_type=type(normalized_data["kazi"]).__name__,
+                    value=normalized_data["kazi"],
+                )
                 normalized_data["kazi"] = []
             if not isinstance(normalized_data["masuala_yaliyoahirishwa"], list):
+                logger.warning(
+                    "summarization.masuala_not_list",
+                    transcription_id=str(transcription_id),
+                    actual_type=type(normalized_data["masuala_yaliyoahirishwa"]).__name__,
+                    value=normalized_data["masuala_yaliyoahirishwa"],
+                )
                 normalized_data["masuala_yaliyoahirishwa"] = []
+            
+            # Log after validation
+            logger.info(
+                "summarization.after_validation",
+                transcription_id=str(transcription_id),
+                maamuzi_final_count=len(normalized_data["maamuzi"]),
+                kazi_final_count=len(normalized_data["kazi"]),
+                masuala_final_count=len(normalized_data["masuala_yaliyoahirishwa"]),
+            )
             
             # Create Summary entity
             from uuid import uuid4

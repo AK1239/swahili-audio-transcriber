@@ -21,7 +21,7 @@ class FileInfo:
     origin: str | None = None
     
     # Constants
-    MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25MB
+    MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024  # 30MB
     
     @classmethod
     def get_allowed_extensions(cls) -> set[str]:

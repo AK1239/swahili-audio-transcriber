@@ -5,6 +5,7 @@ from app.domain.interfaces.file_storage import FileStorage
 from app.domain.interfaces.summarization_provider import SummarizationProvider
 from app.domain.interfaces.transcription_provider import TranscriptionProvider
 from app.domain.interfaces.transcription_repository import TranscriptionRepository
+from app.infrastructure.config.settings import settings
 from app.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -50,10 +51,13 @@ class TranscriptionOrchestrator:
             # Load audio file
             audio_bytes = await self._file_storage.load(transcription.file_path)
             
+            # Get language from settings
+            language = settings.default_language
+            
             # Transcribe - pass filename so provider can use correct extension
             transcript = await self._transcription_provider.transcribe(
                 audio_bytes,
-                language_hint="sw",
+                language_hint=language,
                 filename=transcription.filename,
             )
             
@@ -64,13 +68,14 @@ class TranscriptionOrchestrator:
             self._logger.info(
                 "transcription.completed",
                 transcription_id=str(transcription_id),
+                language=language,
             )
             
             # Summarize
             summary = await self._summarization_provider.summarize(
                 transcript=transcript,
                 transcription_id=transcription_id,
-                language="sw",
+                language=language,
             )
             
             # Log generated summary details before saving

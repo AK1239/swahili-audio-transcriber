@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:5173"
+    default_language: str = Field(
+        default="sw",
+        description="Default language code for transcription and summarization (e.g., 'sw' for Swahili, 'en' for English)"
+    )
     
     model_config = SettingsConfigDict(
         env_file=".env",

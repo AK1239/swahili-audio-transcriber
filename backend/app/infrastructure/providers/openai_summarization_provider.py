@@ -8,7 +8,7 @@ from app.domain.entities.summary import ActionItem, Summary
 from app.domain.exceptions.validation_exceptions import SummarizationProviderError
 from app.domain.interfaces.summarization_provider import SummarizationProvider
 from app.application.services.swahili_processor import SwahiliProcessor
-from app.infrastructure.providers.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+from app.infrastructure.providers.prompts import get_system_prompt, get_user_prompt_template
 from app.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -46,9 +46,25 @@ class OpenAISummarizationProvider(SummarizationProvider):
             transcription_id=str(transcription_id),
             transcript_length=len(transcript),
             model=self._model,
+            language=language,
         )
         
-        # Warn if transcript is very short
+        # Log transcript preview for debugging (first 500 chars)
+        logger.info(
+            "summarization.transcript_preview",
+            transcription_id=str(transcription_id),
+            transcript_preview=transcript[:500] if transcript else "EMPTY",
+            transcript_is_empty=not transcript or len(transcript.strip()) == 0,
+        )
+        
+        # Warn if transcript is very short or empty
+        if not transcript or len(transcript.strip()) == 0:
+            logger.error(
+                "summarization.empty_transcript",
+                transcription_id=str(transcription_id),
+            )
+            raise SummarizationProviderError("Cannot summarize empty transcript")
+        
         if len(transcript) < 100:
             logger.warning(
                 "summarization.short_transcript",
@@ -58,14 +74,28 @@ class OpenAISummarizationProvider(SummarizationProvider):
             )
         
         try:
-            # Format user prompt with transcript
-            user_prompt = USER_PROMPT_TEMPLATE.format(transcript=transcript)
+            # Get language-aware prompts
+            system_prompt = get_system_prompt(language)
+            user_prompt_template = get_user_prompt_template(language)
             
-            # Enhance for code-switching awareness (preserve technical terms, names, etc.)
-            user_prompt = SwahiliProcessor.enhance_prompt_for_code_switching(
-                user_prompt,
-                transcript
+            # Format user prompt with transcript
+            user_prompt = user_prompt_template.format(transcript=transcript)
+            
+            # Log full prompt length to ensure transcript is included
+            logger.info(
+                "summarization.prompt_prepared",
+                transcription_id=str(transcription_id),
+                user_prompt_length=len(user_prompt),
+                transcript_length=len(transcript),
+                transcript_in_prompt=transcript[:100] in user_prompt if transcript else False,
             )
+            
+            # Enhance for code-switching awareness (only for Swahili)
+            if language.lower() == "sw":
+                user_prompt = SwahiliProcessor.enhance_prompt_for_code_switching(
+                    user_prompt,
+                    transcript
+                )
             
             # Call OpenAI API with improved prompt structure
             response = await self._client.chat.completions.create(
@@ -73,7 +103,7 @@ class OpenAISummarizationProvider(SummarizationProvider):
                 messages=[
                     {
                         "role": "system",
-                        "content": SYSTEM_PROMPT,
+                        "content": system_prompt,
                     },
                     {
                         "role": "user",
